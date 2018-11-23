@@ -269,7 +269,7 @@ namespace GitT
                 case CommitStatus.Local:
                     return new ColoredBlock(ConsoleColor.Red, DefaultBackgroundColor);
                 case CommitStatus.Behind:
-                    return new ColoredBlock(ConsoleColor.Red, DefaultBackgroundColor);
+                    return new ColoredBlock(ConsoleColor.Yellow, DefaultBackgroundColor);
                 case CommitStatus.Ahead:
                     return new ColoredBlock(ConsoleColor.Green, DefaultBackgroundColor);
                 default:
