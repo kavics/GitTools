@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
+using GitT.Models;
 
 namespace GitT.Commands
 {
-    public class Components : ICommand
+    public class ComponentsCommand : ICommand
     {
         public string ShortInfo => "Discovers emitted Nuget packages. Optionally checks the published versions " +
                                    "in the nuget.org, and other configured locations";

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace GitT.Commands
+namespace GitT.Models
 {
     [DebuggerDisplay("{" + nameof(Name) + "}")]
     public class Repository

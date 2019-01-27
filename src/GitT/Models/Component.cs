@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NuGet;
 
-namespace GitT.Commands
+namespace GitT.Models
 {
     [DebuggerDisplay("{" + nameof(Name) + "}")]
     public class Component
