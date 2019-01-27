@@ -13,16 +13,6 @@ using SenseNet.Tools;
 
 namespace GitT
 {
-    internal  enum CommitStatus { Default, Local, Behind, Ahead };
-    internal class Repo
-    {
-        public string Name { get; set; }
-        public string Path { get; set; }
-        public string Branch { get; set; }
-        public CommitStatus CommitStatus { get; set; }
-        public string Status { get; set; }
-        public DateTime Modified { get; set; }
-    }
     internal class Program
     {
         private static string _gitWworkerExePath = @"C:\Program Files\Git\bin\git.exe";
@@ -119,8 +109,5 @@ namespace GitT
             Console.WriteLine(message);
             Console.WriteLine();
         }
-
-
-
     }
 }

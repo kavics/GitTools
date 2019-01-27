@@ -2,6 +2,7 @@
 using System.IO;
 using GitT;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SenseNet.Tools.CommandLineArguments;
 
 namespace Tests
 {
@@ -14,10 +15,19 @@ namespace Tests
             public TextReader In { get; set; }
             public TextWriter Out { get; set; }
             public CommandContext Context { get; set; }
+
             public void Execute()
             {
+                if (Context.ParseArguments(out TestCommandArgs arguments))
+                    return;
+
                 Console.WriteLine("Test command executed.");
             }
+        }
+        private class TestCommandArgs
+        {
+            [CommandLineArgument(name: "String", required: false, aliases: "s,S", helpText: "HelpText of TestCommand")]
+            public string StringParam { get; set; }
         }
 
         private TextWriter _outBackup;
@@ -30,6 +40,7 @@ namespace Tests
             _out = new StringWriter();
             Console.SetOut(_out);
         }
+
         [TestCleanup]
         public void CleanupTest()
         {
@@ -54,6 +65,7 @@ namespace Tests
             Assert.IsTrue(output.Contains("Available commands"));
             Assert.IsTrue(output.Contains("TestCommand"));
         }
+
         [TestMethod]
         public void Program_Help()
         {
@@ -72,6 +84,7 @@ namespace Tests
             Assert.IsTrue(output.Contains("Available commands"));
             Assert.IsTrue(output.Contains("TestCommand"));
         }
+
         [TestMethod]
         public void Program_UnknownCommand()
         {
@@ -89,6 +102,7 @@ namespace Tests
             Assert.IsTrue(output.Contains("Available commands"));
             Assert.IsTrue(output.Contains("TestCommand"));
         }
+
         [TestMethod]
         public void Program_Command()
         {
