@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace GitT
+namespace GitT.Models
 {
     public enum CommitStatus { Default, Local, Behind, Ahead };
 
-    public class Repo
+    public class RepositoryInfo
     {
         public string Name { get; set; }
         public string Path { get; set; }

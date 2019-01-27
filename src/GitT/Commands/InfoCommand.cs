@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using GitT.Models;
 
 namespace GitT.Commands
 {
@@ -66,7 +67,7 @@ namespace GitT.Commands
                         Context.Git(r, "fetch", out _, out _);
                     }
                     var gitOut = Context.Git(r, gitArgs, out _, out _);
-                    var repo = new Repo { Path = r, Name = name };
+                    var repo = new RepositoryInfo { Path = r, Name = name };
                     ParseStatus(repo, gitOut);
                     repo.Modified = new DateTime(Math.Max(repo.Modified.Ticks, GetLastFetchDate(r).Ticks));
                     return repo;
@@ -83,7 +84,7 @@ namespace GitT.Commands
                 Console.WriteLine(DateTools.FormatDate(repo.Modified));
             }
         }
-        private void ParseStatus(Repo repo, string gitOut)
+        private void ParseStatus(RepositoryInfo repo, string gitOut)
         {
             var lines = gitOut.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
 
