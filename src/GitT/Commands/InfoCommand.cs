@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace GitT.Commands
 {
-    public class Info : ICommand
+    public class InfoCommand : ICommand
     {
         public string ShortInfo => "Shows current branch, Status and last fetch date of every repository.";
         public TextReader In { get; set; }

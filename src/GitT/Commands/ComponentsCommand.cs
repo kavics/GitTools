@@ -10,7 +10,7 @@ using System.Xml;
 
 namespace GitT.Commands
 {
-    public class Components : ICommand
+    public class ComponentsCommand : ICommand
     {
         public string ShortInfo => "Discovers emitted Nuget packages. Optionally checks the published versions " +
                                    "in the nuget.org, and other configured locations";

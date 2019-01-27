@@ -74,14 +74,14 @@
   <ItemGroup>
     <Compile Include="CommandContext.cs" />
     <Compile Include="Commands\Component.cs" />
-    <Compile Include="Commands\Components.cs" />
+    <Compile Include="Commands\ComponentsCommand.cs" />
     <Compile Include="Commands\ComponentsArguments.cs" />
     <Compile Include="Commands\InfoArguments.cs" />
     <Compile Include="Commands\Package.cs" />
     <Compile Include="Commands\Project.cs" />
     <Compile Include="Commands\Repository.cs" />
     <Compile Include="DateTools.cs" />
-    <Compile Include="Commands\Info.cs" />
+    <Compile Include="Commands\InfoCommand.cs" />
     <Compile Include="ICommand.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
