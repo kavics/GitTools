@@ -66,7 +66,9 @@ namespace GitT
             }
 
             var commandType =
-                CommandTypes.FirstOrDefault(t => t.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
+                CommandTypes.FirstOrDefault(t =>
+                    t.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase) ||
+                    t.Name.Equals(commandName + "command", StringComparison.OrdinalIgnoreCase));
             if (commandType != null)
                 return (ICommand)Activator.CreateInstance(commandType);
 
@@ -81,7 +83,16 @@ namespace GitT
 
         private static string GetAvailableCommandsMessage()
         {
-            return "Available commands:\r\n" + string.Join("\r\n", CommandTypes.Select(t => "  " + t.Name).OrderBy(n => n));
+            return "Available commands:\r\n" + string.Join("\r\n",
+                CommandTypes.Select(t => "  " + GetCommandName(t)).OrderBy(n => n));
+        }
+
+        private static string GetCommandName(Type type)
+        {
+            var name = type.Name;
+            return name.EndsWith("Command")
+                ? name.Substring(0, name.Length - 7)
+                : name;
         }
 
         private static readonly Type[] CommandTypes = new Lazy<Type[]>(() =>

@@ -9,9 +9,10 @@ namespace Tests
     [TestClass]
     public class ProgramTests
     {
-        private class TestCommand : ICommand
+        #region Nested classes
+        private class TestCmd1 : ICommand
         {
-            public string ShortInfo => "TestCommand short description";
+            public string ShortInfo => "TestCmd1 short description";
             public TextReader In { get; set; }
             public TextWriter Out { get; set; }
             public CommandContext Context { get; set; }
@@ -29,6 +30,22 @@ namespace Tests
             [CommandLineArgument(name: "String", required: false, aliases: "s,S", helpText: "HelpText of TestCommand")]
             public string StringParam { get; set; }
         }
+        private class TestCmd2Command : ICommand
+        {
+            public string ShortInfo => "TestCmd2 short description";
+            public TextReader In { get; set; }
+            public TextWriter Out { get; set; }
+            public CommandContext Context { get; set; }
+
+            public void Execute()
+            {
+                if (Context.ParseArguments(out TestCommandArgs arguments))
+                    return;
+
+                Console.WriteLine("Test command executed.");
+            }
+        }
+        #endregion
 
         private TextWriter _outBackup;
         private StringWriter _out;
@@ -63,7 +80,8 @@ namespace Tests
             Assert.IsTrue(output.Contains("GitT <command> [command-arguments]"));
             Assert.IsTrue(output.Contains("GitT <command> </? | -? | /h | -h | /help | -help | --help>"));
             Assert.IsTrue(output.Contains("Available commands"));
-            Assert.IsTrue(output.Contains("TestCommand"));
+            Assert.IsTrue(output.Contains("TestCmd1"));
+            Assert.IsTrue(output.Contains("TestCmd2"));
         }
 
         [TestMethod]
@@ -82,7 +100,8 @@ namespace Tests
             Assert.IsTrue(output.Contains("GitT <command> [command-arguments]"));
             Assert.IsTrue(output.Contains("GitT <command> </? | -? | /h | -h | /help | -help | --help>"));
             Assert.IsTrue(output.Contains("Available commands"));
-            Assert.IsTrue(output.Contains("TestCommand"));
+            Assert.IsTrue(output.Contains("TestCmd1"));
+            Assert.IsTrue(output.Contains("TestCmd2"));
         }
 
         [TestMethod]
@@ -100,18 +119,32 @@ namespace Tests
             Assert.IsTrue(output.Contains("Unknown command"));
             Assert.IsTrue(output.Contains("Command1"));
             Assert.IsTrue(output.Contains("Available commands"));
-            Assert.IsTrue(output.Contains("TestCommand"));
+            Assert.IsTrue(output.Contains("TestCmd1"));
+            Assert.IsTrue(output.Contains("TestCmd2"));
         }
 
         [TestMethod]
         public void Program_Command()
         {
             // ACTION
-            var command = Program.GetCommand("TestCommand");
+            var command = Program.GetCommand("TestCmd1");
 
             // ASSERT
             Assert.IsNotNull(command);
-            Assert.IsInstanceOfType(command, typeof(TestCommand));
+            Assert.IsInstanceOfType(command, typeof(TestCmd1));
+        }
+        [TestMethod]
+        public void Program_CommandSuffix()
+        {
+            // ACTION
+            var command1 = Program.GetCommand("TestCmd1");
+            var command2 = Program.GetCommand("TestCmd2");
+
+            // ASSERT
+            Assert.IsNotNull(command1);
+            Assert.IsInstanceOfType(command1, typeof(TestCmd1));
+            Assert.IsNotNull(command2);
+            Assert.IsInstanceOfType(command2, typeof(TestCmd2Command));
         }
     }
 }
