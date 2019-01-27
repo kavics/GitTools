@@ -254,6 +254,7 @@ namespace GitT
             switch (branch)
             {
                 case "master":
+                    return new ColoredBlock(ConsoleColor.Cyan, DefaultBackgroundColor);
                 case "develop":
                     return new ColoredBlock(DefaultForegroundColor, DefaultBackgroundColor);
                 default:
