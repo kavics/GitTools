@@ -6,25 +6,22 @@ namespace GitT.Commands
 {
     public class Info : ICommand
     {
+        public string ShortInfo => "Shows current branch, Status and last fetch date of every repository.";
         public TextReader In { get; set; }
         public TextWriter Out { get; set; }
+        public CommandContext Context { get; set; }
 
-        public string ShortInfo => "Shows current branch, Status and last fetch date of every repository.";
-
-        private CommandContext _context;
         private InfoArguments _args;
-        public void Execute(CommandContext context)
+        public void Execute()
         {
-            _context = context;
-
-            if (!context.ParseArguments<InfoArguments>(out _args))
+            if (!Context.ParseArguments<InfoArguments>(out _args))
                 return;
 
             var fetch = _args.Fetch;
 
             InitializeColors();
 
-            CurrentBranch2(_context.GithubContainer, fetch);
+            CurrentBranch2(Context.GithubContainer, fetch);
         }
         private void CurrentBranch1(string path)
         {
@@ -38,7 +35,7 @@ namespace GitT.Commands
                 .Select(r => new
                 {
                     name = Path.GetFileName(r),
-                    branch = _context.Git(r, gitArgs, out _, out _).Trim(),
+                    branch = Context.Git(r, gitArgs, out _, out _).Trim(),
                     modified = GetLastFetchDate(r).ToString("yyyy-MM-dd HH:mm:ss")
                 });
 
@@ -66,9 +63,9 @@ namespace GitT.Commands
                     if (fetch)
                     {
                         Console.Write("{0,-30}{1}", name, "fetching...\r");
-                        _context.Git(r, "fetch", out _, out _);
+                        Context.Git(r, "fetch", out _, out _);
                     }
-                    var gitOut = _context.Git(r, gitArgs, out _, out _);
+                    var gitOut = Context.Git(r, gitArgs, out _, out _);
                     var repo = new Repo { Path = r, Name = name };
                     ParseStatus(repo, gitOut);
                     repo.Modified = new DateTime(Math.Max(repo.Modified.Ticks, GetLastFetchDate(r).Ticks));

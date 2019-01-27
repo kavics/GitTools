@@ -13,7 +13,8 @@ namespace Tests
             public string ShortInfo => "TestCommand short description";
             public TextReader In { get; set; }
             public TextWriter Out { get; set; }
-            public void Execute(CommandContext context)
+            public CommandContext Context { get; set; }
+            public void Execute()
             {
                 Console.WriteLine("Test command executed.");
             }

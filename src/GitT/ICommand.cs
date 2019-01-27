@@ -7,7 +7,8 @@ namespace GitT
         string ShortInfo { get; }
         TextReader In { get; set; }
         TextWriter Out { get; set; }
+        CommandContext Context { get; set; }
 
-        void Execute(CommandContext context);
+        void Execute();
     }
 }

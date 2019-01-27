@@ -30,29 +30,34 @@ namespace GitT
 
         static void Main(string[] args)
         {
-            //args = new[] {"-f"};
-            //Run(args);
+            //args = new[] {"components", "-?"};
 
-            var command =  GetCommand(args.FirstOrDefault());
-            if (command == null)
-                return;
-
-            try
-            {
-                var context = new CommandContext(_githubContainer, _gitWworkerExePath,
-                    args.Skip(1).ToArray());
-                command.Execute(context);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+            Run(args);
 
             if (Debugger.IsAttached)
             {
                 Console.Write("Press any key to exit...");
                 Console.ReadKey();
                 Console.WriteLine();
+            }
+        }
+
+        static void Run(string[] args)
+        {
+            var command = GetCommand(args.FirstOrDefault());
+            if (command == null)
+                return;
+
+            try
+            {
+                var context = new CommandContext(_githubContainer, _gitWworkerExePath, command,
+                    args.Skip(1).ToArray());
+                command.Context = context;
+                command.Execute();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
             }
         }
 
@@ -86,7 +91,7 @@ namespace GitT
 
         private static string GetAvailableCommandsMessage()
         {
-            return "Available commands:\r\n" + string.Join("\r\n", CommandTypes.Select(t => t.Name));
+            return "Available commands:\r\n" + string.Join("\r\n", CommandTypes.Select(t => "  " + t.Name).OrderBy(n => n));
         }
 
         private static readonly Type[] CommandTypes = new Lazy<Type[]>(() =>
@@ -107,7 +112,7 @@ namespace GitT
         private static void Usage(string message)
         {
             Console.WriteLine();
-            Console.WriteLine("Git Tools V0.1");
+            Console.WriteLine("Git Tools V0.2");
             Console.WriteLine("==============");
             Console.WriteLine();
             Console.WriteLine("Usage:");

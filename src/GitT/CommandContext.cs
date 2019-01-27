@@ -14,11 +14,13 @@ namespace GitT
 
         public string GithubContainer { get; }
         public string[] Args { get; }
+        internal ICommand Command { get; }
 
-        internal CommandContext(string githubContainer, string gitWorkerExePath, string[] args)
+        internal CommandContext(string githubContainer, string gitWorkerExePath, ICommand command, string[] args)
         {
             GithubContainer = githubContainer;
             _gitWorkerExePath = gitWorkerExePath;
+            Command = command;
             Args = args;
         }
 
@@ -31,9 +33,18 @@ namespace GitT
             if (!result.IsHelp)
                 return true;
 
-            Console.WriteLine(result.GetHelpText());
+            Console.WriteLine(InsertCommandName(result.GetHelpText(), Command.GetType().Name));
             arguments = null;
             return false;
+        }
+
+        private string InsertCommandName(string helpText, string name)
+        {
+            var p = helpText.IndexOf("Usage:", StringComparison.Ordinal);
+            p = helpText.IndexOf("GitT", p, StringComparison.Ordinal) + 5;
+            var before = helpText.Substring(0, p);
+            var after = helpText.Substring(p);
+            return before + name + " " + after;
         }
 
         public string Git(string repoPath, string gitArgs, out int exitCode, out string stdErr)

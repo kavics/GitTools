@@ -14,10 +14,14 @@ namespace GitT.Commands
 
         public TextReader In { get; set; }
         public TextWriter Out { get; set; }
+        public CommandContext Context { get; set; }
 
-        public void Execute(CommandContext context)
+        private ComponentsArguments _args;
+        public void Execute()
         {
-            throw new NotImplementedException();
+            if (!Context.ParseArguments(out _args))
+                return;
+
         }
     }
 }
