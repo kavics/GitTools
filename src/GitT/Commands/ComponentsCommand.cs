@@ -119,7 +119,8 @@ namespace GitT.Commands
 
             var pkgId = xml.SelectSingleNode("/Project/PropertyGroup/PackageId")?.InnerText ?? project.Name;
             var pkgVersion = xml.SelectSingleNode("/Project/PropertyGroup/Version")?.InnerText;
-            var component = new Component(pkgId, pkgVersion, GetNugetOrgVersion(pkgId), project.PrjPath, project);
+            var nugetVersion = _args.Nuget ? CommandContext.GetNugetOrgVersion(pkgId) : string.Empty;
+            var component = new Component(pkgId, pkgVersion, nugetVersion, project.PrjPath, project);
             project.Components.Add(component);
             PrintComponent(component);
 
@@ -157,7 +158,8 @@ namespace GitT.Commands
 
             var id = xml.SelectSingleNode($"//{p}metadata/{p}id", nsmgr)?.InnerText;
             var version = xml.SelectSingleNode($"//{p}metadata/{p}version", nsmgr)?.InnerText;
-            var component = new Component(id, version, GetNugetOrgVersion(id), path, project);
+            var nugetVersion = _args.Nuget ? CommandContext.GetNugetOrgVersion(id) : string.Empty;
+            var component = new Component(id, version, nugetVersion, path, project);
             PrintComponent(component);
             return component;
         }
@@ -177,17 +179,6 @@ namespace GitT.Commands
                     packages.Add(new Package(id, version, targetFramework, project));
             }
             return packages;
-        }
-
-        private string GetNugetOrgVersion(string packageId)
-        {
-            if (!_args.Nuget)
-                return string.Empty;
-            var repo = PackageRepositoryFactory.Default.CreateRepository("https://packages.nuget.org/api/v2");
-            var packages = repo.FindPackagesById(packageId).ToArray();
-            return packages.Any()
-                ? packages.Max(p => p.Version).ToString()
-                : string.Empty;
         }
 
         private void PrintComponent(Component compnent)

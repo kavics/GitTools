@@ -84,15 +84,7 @@ namespace GitT
         private static string GetAvailableCommandsMessage()
         {
             return "Available commands:\r\n" + string.Join("\r\n",
-                CommandTypes.Select(t => "  " + GetCommandName(t)).OrderBy(n => n));
-        }
-
-        private static string GetCommandName(Type type)
-        {
-            var name = type.Name;
-            return name.EndsWith("Command")
-                ? name.Substring(0, name.Length - 7)
-                : name;
+                CommandTypes.Select(t => "  " + CommandContext.GetCommandName(t)).OrderBy(n => n));
         }
 
         private static readonly Type[] CommandTypes = new Lazy<Type[]>(() =>
