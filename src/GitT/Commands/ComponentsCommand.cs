@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using GitT.Models;
+using NuGet;
 
 namespace GitT.Commands
 {
@@ -25,48 +26,55 @@ namespace GitT.Commands
             Run(Context.GithubContainer);
         }
 
-        private static void Run(string githubPath)
+        private void Run(string githubPath)
         {
+            Console.WriteLine($"COMPONENTS");
+            if (_args.Nuget)
+            {
+                Console.WriteLine("{0,-50} {1,-15} {2}", "Component.Id", "Version", "nuget.org");
+                Console.WriteLine("================================================== =============== ===============");
+            }
+            else
+            {
+                Console.WriteLine("{0,-50} {1,-15}", "Component.Id", "Version");
+                Console.WriteLine("================================================== ===============");
+            }
             var repositories = Discover(githubPath);
 
-            //foreach (var project in repositories.SelectMany(r => r.Projects.Where(p => p.Components.Length > 0)))
-            //{
-
-            //}
             var components = repositories.SelectMany(r => r.Projects).SelectMany(p => p.Components).ToArray();
-            var packages = repositories.SelectMany(r => r.Projects).SelectMany(p => p.Packages).ToArray();
+
+            //var packages = repositories.SelectMany(r => r.Projects).SelectMany(p => p.Packages).ToArray();
 
             //Console.WriteLine($"COMPONENTS");
             //Console.WriteLine();
 
-            foreach (var c in components)
-                Console.WriteLine("{0,-50} {1,-20} {2}", c.Id, c.Version, c.NugetVersion);
-return;
-            Console.WriteLine();
-            Console.WriteLine($"INCOMPATIBLE PACKAGES");
-            Console.WriteLine();
+            return;
 
-            var inCompPkgs = new List<Package>();
-            foreach (var package in packages)
-            {
-                var component = components.FirstOrDefault(c => c.Id == package.Id);
-                if (component == null)
-                    continue;
-                if (component.Version != package.Version)
-                    inCompPkgs.Add(package);
-            }
+            //Console.WriteLine();
+            //Console.WriteLine($"INCOMPATIBLE PACKAGES");
+            //Console.WriteLine();
 
-            //var x = inCompPkgs.OrderBy(p => p.Project.Name).ThenBy(p => p.Id)
-            foreach (var item in inCompPkgs
-                .GroupBy(p => p.Project.Name, p => p, (x, y) => new { proj = x, refs = y.ToArray() }))
-            {
-                Console.WriteLine(item.proj);
-                foreach (var @ref in item.refs)
-                    Console.WriteLine("  {0,-70} {1}", @ref.Id, @ref.Version);
-            }
+            //var inCompPkgs = new List<Package>();
+            //foreach (var package in packages)
+            //{
+            //    var component = components.FirstOrDefault(c => c.Id == package.Id);
+            //    if (component == null)
+            //        continue;
+            //    if (component.Version != package.Version)
+            //        inCompPkgs.Add(package);
+            //}
+
+            ////var x = inCompPkgs.OrderBy(p => p.Project.Name).ThenBy(p => p.Id)
+            //foreach (var item in inCompPkgs
+            //    .GroupBy(p => p.Project.Name, p => p, (x, y) => new { proj = x, refs = y.ToArray() }))
+            //{
+            //    Console.WriteLine(item.proj);
+            //    foreach (var @ref in item.refs)
+            //        Console.WriteLine("  {0,-70} {1}", @ref.Id, @ref.Version);
+            //}
         }
 
-        private static Repository[] Discover(string githubPath)
+        private Repository[] Discover(string githubPath)
         {
             var repos = new List<Repository>();
             foreach (var dir in Directory.GetDirectories(githubPath))
@@ -78,7 +86,7 @@ return;
             return repos.ToArray();
         }
 
-        private static void DiscoverRepository(string directory, Repository repo)
+        private void DiscoverRepository(string directory, Repository repo)
         {
             foreach (var path in Directory.GetFiles(directory, "*.csproj"))
             {
@@ -91,7 +99,7 @@ return;
                 DiscoverRepository(dir, repo);
         }
 
-        private static void DiscoverProject(Project project)
+        private void DiscoverProject(Project project)
         {
             if (ParseCsproj(project))
                 return;
@@ -100,7 +108,7 @@ return;
                 DiscoverComponents(dir, project);
         }
 
-        private static bool ParseCsproj(Project project)
+        private bool ParseCsproj(Project project)
         {
             var xml = new XmlDocument();
             xml.Load(project.PrjPath);
@@ -111,7 +119,9 @@ return;
 
             var pkgId = xml.SelectSingleNode("/Project/PropertyGroup/PackageId")?.InnerText ?? project.Name;
             var pkgVersion = xml.SelectSingleNode("/Project/PropertyGroup/Version")?.InnerText;
-            project.Components.Add(new Component(pkgId, pkgVersion, project.PrjPath, project));
+            var component = new Component(pkgId, pkgVersion, GetNugetOrgVersion(pkgId), project.PrjPath, project);
+            project.Components.Add(component);
+            PrintComponent(component);
 
             // ReSharper disable once PossibleNullReferenceException
             foreach (XmlElement packageElement in xml.SelectNodes("//PackageReference"))
@@ -122,11 +132,10 @@ return;
                     project.Packages.Add(new Package(id, version, null, project));
             }
 
-
             return true;
         }
 
-        private static void DiscoverComponents(string directory, Project project)
+        private void DiscoverComponents(string directory, Project project)
         {
             var path = Directory.GetFiles(directory, "*.nuspec").FirstOrDefault();
             if (path != null)
@@ -138,7 +147,7 @@ return;
         }
 
         [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-        private static Component ParseComponent(string path, Project project)
+        private Component ParseComponent(string path, Project project)
         {
             var xml = new XmlDocument();
             xml.Load(path);
@@ -148,10 +157,12 @@ return;
 
             var id = xml.SelectSingleNode($"//{p}metadata/{p}id", nsmgr)?.InnerText;
             var version = xml.SelectSingleNode($"//{p}metadata/{p}version", nsmgr)?.InnerText;
-            return new Component(id, version, path, project);
+            var component = new Component(id, version, GetNugetOrgVersion(id), path, project);
+            PrintComponent(component);
+            return component;
         }
 
-        private static IEnumerable<Package> ParsePackages(string path, Project project)
+        private IEnumerable<Package> ParsePackages(string path, Project project)
         {
             var xml = new XmlDocument();
             xml.Load(path);
@@ -168,5 +179,23 @@ return;
             return packages;
         }
 
+        private string GetNugetOrgVersion(string packageId)
+        {
+            if (!_args.Nuget)
+                return string.Empty;
+            var repo = PackageRepositoryFactory.Default.CreateRepository("https://packages.nuget.org/api/v2");
+            var packages = repo.FindPackagesById(packageId).ToArray();
+            return packages.Any()
+                ? packages.Max(p => p.Version).ToString()
+                : string.Empty;
+        }
+
+        private void PrintComponent(Component compnent)
+        {
+            //if (_args.Nuget)
+                Console.WriteLine("{0,-50} {1,-15} {2}", compnent.Id, compnent.Version, compnent.NugetVersion);
+            //else
+            //    Console.WriteLine("{0,-50} {1,-15}", compnent.Id, compnent.Version);
+        }
     }
 }
