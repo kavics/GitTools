@@ -15,14 +15,13 @@ namespace GitT
 {
     internal class Program
     {
-        private static string _gitWworkerExePath = @"C:\Program Files\Git\bin\git.exe";
-        private static string _githubContainer = @"D:\dev\github";
-
         static void Main(string[] args)
         {
-            //args = new[] {"components"};
+            //args = new[] {"configure"};
 
-            Run(args);
+            var githubContainer = Directory.GetCurrentDirectory();
+
+            Run(githubContainer, args);
 
             if (Debugger.IsAttached)
             {
@@ -32,7 +31,7 @@ namespace GitT
             }
         }
 
-        static void Run(string[] args)
+        static void Run(string githubContainer, string[] args)
         {
             var command = GetCommand(args.FirstOrDefault());
             if (command == null)
@@ -40,8 +39,15 @@ namespace GitT
 
             try
             {
-                var context = new CommandContext(_githubContainer, _gitWworkerExePath, command,
-                    args.Skip(1).ToArray());
+                var context = new CommandContext(githubContainer, command, args.Skip(1).ToArray());
+                if (!(command is ConfigureCommand) && context.Config.GitExePath == null)
+                {
+                    Console.WriteLine("GitT cannot run because git.exe was not found.");
+                    Console.WriteLine("Please configure the full path of the git.exe with the following command:");
+                    Console.WriteLine("GitT Configure GitExe <fullpath>");
+
+                    return;
+                }
                 command.Context = context;
                 command.Execute();
             }
