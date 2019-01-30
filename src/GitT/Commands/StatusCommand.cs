@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using GitT.Models;
+using SenseNet.Tools.CommandLineArguments;
 
 namespace GitT.Commands
 {
@@ -15,8 +16,16 @@ namespace GitT.Commands
         private StatusArguments _args;
         public void Execute()
         {
-            if (!Context.ParseArguments<StatusArguments>(out _args))
+            try
+            {
+                if (!Context.ParseArguments<StatusArguments>(out _args))
+                    return;
+            }
+            catch (ParsingException e)
+            {
+                Console.WriteLine(e.FormattedMessage);
                 return;
+            }
 
             var fetch = _args.Fetch;
 

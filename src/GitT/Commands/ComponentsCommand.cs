@@ -6,6 +6,7 @@ using System.Linq;
 using System.Xml;
 using GitT.Models;
 using NuGet;
+using SenseNet.Tools.CommandLineArguments;
 
 namespace GitT.Commands
 {
@@ -22,8 +23,16 @@ namespace GitT.Commands
         private ComponentsArguments _args;
         public void Execute()
         {
-            if (!Context.ParseArguments(out _args))
+            try
+            {
+                if (!Context.ParseArguments(out _args))
+                    return;
+            }
+            catch (ParsingException e)
+            {
+                Console.WriteLine(e.FormattedMessage);
                 return;
+            }
 
             if (_args.References)
                 _args.Nuget = false;

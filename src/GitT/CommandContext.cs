@@ -11,16 +11,16 @@ namespace GitT
 {
     public class CommandContext
     {
-        private static string _gitWorkerExePath;
+        public UserSettings Config { get; }
 
         public string GithubContainer { get; }
         public string[] Args { get; }
-        internal ICommand Command { get; }
+        public ICommand Command { get; }
 
-        internal CommandContext(string githubContainer, string gitWorkerExePath, ICommand command, string[] args)
+        internal CommandContext(string githubContainer, ICommand command, string[] args)
         {
+            Config = UserSettings.Load();
             GithubContainer = githubContainer;
-            _gitWorkerExePath = gitWorkerExePath;
             Command = command;
             Args = args;
         }
@@ -71,7 +71,7 @@ namespace GitT
         {
             var process = Process.Start(new ProcessStartInfo
             {
-                FileName = _gitWorkerExePath,
+                FileName = Config.GitExePath,
                 Arguments = gitArgs,
                 WorkingDirectory = repoPath,
                 UseShellExecute = false,
