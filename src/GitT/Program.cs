@@ -20,7 +20,7 @@ namespace GitT
 
         static void Main(string[] args)
         {
-            //args = new[] {"components", "-?"};
+            //args = new[] {"components"};
 
             Run(args);
 
