@@ -136,11 +136,14 @@ namespace GitT.Commands
 
             var pkgId = xml.SelectSingleNode("/Project/PropertyGroup/PackageId")?.InnerText ?? project.Name;
             var pkgVersion = xml.SelectSingleNode("/Project/PropertyGroup/Version")?.InnerText;
-            var nugetVersion = _args.Nuget ? CommandContext.GetNugetOrgVersion(pkgId) : string.Empty;
-            var component = new Component(pkgId, pkgVersion, nugetVersion, project.PrjPath, project);
-            project.Components.Add(component);
-            if (!_args.References)
-                PrintComponent(component);
+            if (pkgVersion != null)
+            {
+                var nugetVersion = _args.Nuget ? CommandContext.GetNugetOrgVersion(pkgId) : string.Empty;
+                var component = new Component(pkgId, pkgVersion, nugetVersion, project.PrjPath, project);
+                project.Components.Add(component);
+                if (!_args.References)
+                    PrintComponent(component);
+            }
 
             // ReSharper disable once PossibleNullReferenceException
             foreach (XmlElement packageElement in xml.SelectNodes("//PackageReference"))
