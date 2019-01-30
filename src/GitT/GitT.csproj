@@ -76,12 +76,12 @@
     <Compile Include="Models\Component.cs" />
     <Compile Include="Commands\ComponentsCommand.cs" />
     <Compile Include="Commands\ComponentsArguments.cs" />
-    <Compile Include="Commands\InfoArguments.cs" />
+    <Compile Include="Commands\StatusArguments.cs" />
     <Compile Include="Models\Package.cs" />
     <Compile Include="Models\Project.cs" />
     <Compile Include="Models\Repository.cs" />
     <Compile Include="DateTools.cs" />
-    <Compile Include="Commands\InfoCommand.cs" />
+    <Compile Include="Commands\StatusCommand.cs" />
     <Compile Include="ICommand.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -118,8 +118,8 @@ namespace GitT.Commands
 
         private void DiscoverProject(Project project)
         {
-            if (ParseCsproj(project))
-                return;
+            ParseCsproj(project);
+
             DiscoverComponents(project.Path, project);
             foreach (var dir in Directory.GetDirectories(project.Path))
                 DiscoverComponents(dir, project);
@@ -136,11 +136,14 @@ namespace GitT.Commands
 
             var pkgId = xml.SelectSingleNode("/Project/PropertyGroup/PackageId")?.InnerText ?? project.Name;
             var pkgVersion = xml.SelectSingleNode("/Project/PropertyGroup/Version")?.InnerText;
-            var nugetVersion = _args.Nuget ? CommandContext.GetNugetOrgVersion(pkgId) : string.Empty;
-            var component = new Component(pkgId, pkgVersion, nugetVersion, project.PrjPath, project);
-            project.Components.Add(component);
-            if (!_args.References)
-                PrintComponent(component);
+            if (pkgVersion != null)
+            {
+                var nugetVersion = _args.Nuget ? CommandContext.GetNugetOrgVersion(pkgId) : string.Empty;
+                var component = new Component(pkgId, pkgVersion, nugetVersion, project.PrjPath, project);
+                project.Components.Add(component);
+                if (!_args.References)
+                    PrintComponent(component);
+            }
 
             // ReSharper disable once PossibleNullReferenceException
             foreach (XmlElement packageElement in xml.SelectNodes("//PackageReference"))
@@ -156,11 +159,11 @@ namespace GitT.Commands
 
         private void DiscoverComponents(string directory, Project project)
         {
-            var path = Directory.GetFiles(directory, "*.nuspec").FirstOrDefault();
-            if (path != null)
-                project.Components.Add(ParseComponent(path, project));
+            var nuspecs = Directory.GetFiles(directory, "*.nuspec");
+            foreach (var nuspec in nuspecs)
+                project.Components.Add(ParseComponent(nuspec, project));
 
-            path = Directory.GetFiles(directory, "packages.config").FirstOrDefault();
+            var path = Directory.GetFiles(directory, "packages.config").FirstOrDefault();
             if (path != null)
                 project.Packages.AddRange(ParsePackages(path, project));
         }
