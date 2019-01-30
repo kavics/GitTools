@@ -54,8 +54,8 @@ namespace GitT.Commands
             var gitArgs = @"status -b -s";
 
             Console.WriteLine("REPOSITORIES");
-            Console.WriteLine("{0,-30}{1,-30}{2,-25}{3}", "Repository", "Current branch", "Status", "Modified/Last Fetch");
-            Console.WriteLine("============================= ============================= ======================== ===================");
+            Console.WriteLine("{0,-40}{1,-30}{2,-25}{3}", "Repository", "Current branch", "Status", "Modified/Last Fetch");
+            Console.WriteLine("======================================= ============================= ======================== ===================");
 
             var enumerable = Directory.GetDirectories(path)
                 .Select(r =>
@@ -63,7 +63,7 @@ namespace GitT.Commands
                     var name = Path.GetFileName(r);
                     if (fetch)
                     {
-                        Console.Write("{0,-30}{1}", name, "fetching...\r");
+                        Console.Write("{0,-40}{1}", name, "fetching...\r");
                         Context.Git(r, "fetch", out _, out _);
                     }
                     var gitOut = Context.Git(r, gitArgs, out _, out _);
@@ -75,7 +75,7 @@ namespace GitT.Commands
 
             foreach (var repo in enumerable)
             {
-                Console.Write("{0,-30}", repo.Name);
+                Console.Write("{0,-40}", repo.Name);
                 using (BranchColor(repo.Branch))
                     Console.Write("{0,-30}", repo.Branch);
                 using (StatusColor(repo.CommitStatus))
