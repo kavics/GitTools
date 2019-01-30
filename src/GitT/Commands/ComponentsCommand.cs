@@ -118,8 +118,8 @@ namespace GitT.Commands
 
         private void DiscoverProject(Project project)
         {
-            if (ParseCsproj(project))
-                return;
+            ParseCsproj(project);
+
             DiscoverComponents(project.Path, project);
             foreach (var dir in Directory.GetDirectories(project.Path))
                 DiscoverComponents(dir, project);
@@ -156,11 +156,11 @@ namespace GitT.Commands
 
         private void DiscoverComponents(string directory, Project project)
         {
-            var path = Directory.GetFiles(directory, "*.nuspec").FirstOrDefault();
-            if (path != null)
-                project.Components.Add(ParseComponent(path, project));
+            var nuspecs = Directory.GetFiles(directory, "*.nuspec");
+            foreach (var nuspec in nuspecs)
+                project.Components.Add(ParseComponent(nuspec, project));
 
-            path = Directory.GetFiles(directory, "packages.config").FirstOrDefault();
+            var path = Directory.GetFiles(directory, "packages.config").FirstOrDefault();
             if (path != null)
                 project.Packages.AddRange(ParsePackages(path, project));
         }
