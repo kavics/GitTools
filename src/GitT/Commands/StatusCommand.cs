@@ -5,17 +5,17 @@ using GitT.Models;
 
 namespace GitT.Commands
 {
-    public class InfoCommand : ICommand
+    public class StatusCommand : ICommand
     {
         public string ShortInfo => "Shows current branch, Status and last fetch date of every repository.";
         public TextReader In { get; set; }
         public TextWriter Out { get; set; }
         public CommandContext Context { get; set; }
 
-        private InfoArguments _args;
+        private StatusArguments _args;
         public void Execute()
         {
-            if (!Context.ParseArguments<InfoArguments>(out _args))
+            if (!Context.ParseArguments<StatusArguments>(out _args))
                 return;
 
             var fetch = _args.Fetch;
