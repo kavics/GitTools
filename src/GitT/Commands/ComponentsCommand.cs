@@ -11,8 +11,9 @@ namespace GitT.Commands
 {
     public class ComponentsCommand : ICommand
     {
-        public string ShortInfo => "Discovers emitted Nuget packages. Optionally checks the published versions " +
-                                   "in the nuget.org, and other configured locations";
+        public string ShortInfo => "Discovers emitted/referenced Nuget packages. " +
+                                   "Optionally checks the published versions in the nuget.org, " +
+                                   "and other configured locations";
 
         public TextReader In { get; set; }
         public TextWriter Out { get; set; }
@@ -23,61 +24,75 @@ namespace GitT.Commands
         {
             if (!Context.ParseArguments(out _args))
                 return;
-            Run(Context.GithubContainer);
+
+            if (_args.References)
+                _args.Nuget = false;
+
+            Run();
         }
 
-        private void Run(string githubPath)
+        private void Run()
         {
-            Console.WriteLine($"COMPONENTS");
-            if (_args.Nuget)
+            if (_args.References)
             {
-                Console.WriteLine("{0,-50} {1,-15} {2}", "Component.Id", "Version", "nuget.org");
-                Console.WriteLine("================================================== =============== ===============");
+                Console.WriteLine("REFERENCES");
             }
             else
             {
-                Console.WriteLine("{0,-50} {1,-15}", "Component.Id", "Version");
-                Console.WriteLine("================================================== ===============");
+                Console.WriteLine("COMPONENTS");
+                if (_args.Nuget)
+                {
+                    Console.WriteLine("{0,-50} {1,-15} {2}", "Component.Id", "Version", "nuget.org");
+                    Console.WriteLine("================================================== =============== ===============");
+                }
+                else
+                {
+                    Console.WriteLine("{0,-50} {1,-15}", "Component.Id", "Version");
+                    Console.WriteLine("================================================== ===============");
+                }
             }
-            var repositories = Discover(githubPath);
+            var repositories = Discover();
 
-            var components = repositories.SelectMany(r => r.Projects).SelectMany(p => p.Components).ToArray();
+            if (_args.Differences)
+            {
+                var components = repositories.SelectMany(r => r.Projects).SelectMany(p => p.Components).ToArray();
+                var packages = _args.References
+                    ? repositories.SelectMany(r => r.Projects).SelectMany(p => p.Packages).ToArray()
+                    : new Package[0];
 
-            //var packages = repositories.SelectMany(r => r.Projects).SelectMany(p => p.Packages).ToArray();
+                Console.WriteLine();
+                Console.WriteLine($"INCOMPATIBLE PACKAGES");
+                Console.WriteLine();
 
-            //Console.WriteLine($"COMPONENTS");
-            //Console.WriteLine();
+                var inCompPkgs = new List<Package>();
+                if (!string.IsNullOrEmpty(_args.Prefix))
+                    packages = packages
+                        .Where(p => p.Id.StartsWith(_args.Prefix, StringComparison.OrdinalIgnoreCase))
+                        .ToArray();
+                foreach (var package in packages)
+                {
+                    var component = components.FirstOrDefault(c => c.Id == package.Id);
+                    if (component == null)
+                        continue;
+                    if (component.Version != package.Version)
+                        inCompPkgs.Add(package);
+                }
 
-            return;
-
-            //Console.WriteLine();
-            //Console.WriteLine($"INCOMPATIBLE PACKAGES");
-            //Console.WriteLine();
-
-            //var inCompPkgs = new List<Package>();
-            //foreach (var package in packages)
-            //{
-            //    var component = components.FirstOrDefault(c => c.Id == package.Id);
-            //    if (component == null)
-            //        continue;
-            //    if (component.Version != package.Version)
-            //        inCompPkgs.Add(package);
-            //}
-
-            ////var x = inCompPkgs.OrderBy(p => p.Project.Name).ThenBy(p => p.Id)
-            //foreach (var item in inCompPkgs
-            //    .GroupBy(p => p.Project.Name, p => p, (x, y) => new { proj = x, refs = y.ToArray() }))
-            //{
-            //    Console.WriteLine(item.proj);
-            //    foreach (var @ref in item.refs)
-            //        Console.WriteLine("  {0,-70} {1}", @ref.Id, @ref.Version);
-            //}
+                //var x = inCompPkgs.OrderBy(p => p.Project.Name).ThenBy(p => p.Id)
+                foreach (var item in inCompPkgs
+                    .GroupBy(p => p.Project.Name, p => p, (x, y) => new { proj = x, refs = y.ToArray() }))
+                {
+                    Console.WriteLine(item.proj);
+                    foreach (var @ref in item.refs)
+                        Console.WriteLine("  {0,-50} {1}", @ref.Id, @ref.Version);
+                }
+            }
         }
 
-        private Repository[] Discover(string githubPath)
+        private Repository[] Discover()
         {
             var repos = new List<Repository>();
-            foreach (var dir in Directory.GetDirectories(githubPath))
+            foreach (var dir in Directory.GetDirectories(Context.GithubContainer))
             {
                 var repo = new Repository(dir);
                 repos.Add(repo);
@@ -93,6 +108,8 @@ namespace GitT.Commands
                 var project = new Project(path);
                 repo.Projects.Add(project);
                 DiscoverProject(project);
+                if (_args.References && !_args.Differences && project.Packages.Count > 0)
+                    PrintProjectReferences(project);
             }
 
             foreach (var dir in Directory.GetDirectories(directory))
@@ -122,7 +139,8 @@ namespace GitT.Commands
             var nugetVersion = _args.Nuget ? CommandContext.GetNugetOrgVersion(pkgId) : string.Empty;
             var component = new Component(pkgId, pkgVersion, nugetVersion, project.PrjPath, project);
             project.Components.Add(component);
-            PrintComponent(component);
+            if (!_args.References)
+                PrintComponent(component);
 
             // ReSharper disable once PossibleNullReferenceException
             foreach (XmlElement packageElement in xml.SelectNodes("//PackageReference"))
@@ -160,7 +178,8 @@ namespace GitT.Commands
             var version = xml.SelectSingleNode($"//{p}metadata/{p}version", nsmgr)?.InnerText;
             var nugetVersion = _args.Nuget ? CommandContext.GetNugetOrgVersion(id) : string.Empty;
             var component = new Component(id, version, nugetVersion, path, project);
-            PrintComponent(component);
+            if (!_args.References)
+                PrintComponent(component);
             return component;
         }
 
@@ -178,15 +197,37 @@ namespace GitT.Commands
                 if (!string.IsNullOrEmpty(id))
                     packages.Add(new Package(id, version, targetFramework, project));
             }
+
             return packages;
         }
 
-        private void PrintComponent(Component compnent)
+        private void PrintComponent(Component component)
         {
-            //if (_args.Nuget)
-                Console.WriteLine("{0,-50} {1,-15} {2}", compnent.Id, compnent.Version, compnent.NugetVersion);
-            //else
-            //    Console.WriteLine("{0,-50} {1,-15}", compnent.Id, compnent.Version);
+            Console.WriteLine("{0,-50} {1,-15} {2}", component.Id, component.Version, component.NugetVersion);
+        }
+
+        private void PrintProjectReferences(Project project)
+        {
+            var refs = GetFilteredReferences(project);
+            if (!refs.Any())
+                return;
+
+            Console.WriteLine("{0} - {1}", project.Name, project.Path);
+            foreach (var package in refs)
+                Console.WriteLine("  {0,-50} {1,-15}", package.Id, package.Version);
+        }
+
+        private List<Package> GetFilteredReferences(Project project)
+        {
+            var packages = project.Packages;
+            var prefix = _args.Prefix;
+
+            if (!string.IsNullOrEmpty(prefix))
+                packages = packages
+                    .Where(x => x.Id.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+            return packages;
         }
     }
 }
