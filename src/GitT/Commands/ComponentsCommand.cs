@@ -114,7 +114,7 @@ namespace GitT.Commands
         {
             foreach (var path in Directory.GetFiles(directory, "*.csproj"))
             {
-                var project = new Project(path);
+                var project = new Project(repo, path);
                 repo.Projects.Add(project);
                 DiscoverProject(project);
                 if (_args.References && !_args.Differences && project.Packages.Count > 0)
@@ -224,7 +224,9 @@ namespace GitT.Commands
             if (!refs.Any())
                 return;
 
-            Console.WriteLine("{0} - {1}", project.Name, project.Path);
+            var root = Context.GithubContainer + "\\";
+
+            Console.WriteLine("{0} - {1}", project.Name, project.Path.Replace(root, string.Empty));
             foreach (var package in refs)
                 Console.WriteLine("  {0,-50} {1,-15}", package.Id, package.Version);
         }
