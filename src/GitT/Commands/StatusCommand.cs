@@ -123,8 +123,19 @@ namespace GitT.Commands
             {
                 foreach (var line in lines.Skip(1))
                 {
+                    string path;
+                    if (line.StartsWith("R  "))
+                    {
+                        var p = line.IndexOf(" -> ", StringComparison.Ordinal);
+                        if (p < 0)
+                            throw new InvalidOperationException("Line is not parsed: " + line);
+                        path = Path.Combine(repo.Path, line.Substring(p + 4));
+                    }
+                    else
+                    {
+                        path = Path.Combine(repo.Path, line.Substring(3));
+                    }
                     var time = DateTime.MinValue;
-                    var path = Path.Combine(repo.Path, line.Substring(3));
                     if (Directory.Exists(path))
                         time = Directory.GetLastWriteTime(path);
                     if (File.Exists(path))
