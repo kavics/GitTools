@@ -17,7 +17,8 @@ namespace GitT
     {
         static void Main(string[] args)
         {
-            //args = new[] {"configure"};
+            //Directory.SetCurrentDirectory(@"D:\Projects\github\kavics");
+            //args = new[] { "components", "-r" };
 
             var githubContainer = Directory.GetCurrentDirectory();
 
