@@ -122,6 +122,8 @@ GitT Status [-F|-Fetch] [-?|...]
 
 ## Components
 
+**WARNING** *Not tested with .NET Core and .NET Standard project types*
+
 Discovers nuget packages in all local repositories. If the `-R` (references) switch is on, the referenced, otherwise the emitted packages are listed. See examples:
 
 View components:
