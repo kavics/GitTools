@@ -6,6 +6,7 @@ using SenseNet.Tools.CommandLineArguments;
 
 namespace GitT.Commands
 {
+    // ReSharper disable once UnusedMember.Global
     public class StatusCommand : ICommand
     {
         public string ShortInfo => "Shows current branch, Status and last fetch date of every repository.";
@@ -18,7 +19,7 @@ namespace GitT.Commands
         {
             try
             {
-                if (!Context.ParseArguments<StatusArguments>(out _args))
+                if (!Context.ParseArguments(out _args))
                     return;
             }
             catch (ParsingException e)
@@ -31,36 +32,11 @@ namespace GitT.Commands
 
             InitializeColors();
 
-            CurrentBranch2(Context.GithubContainer, fetch);
+            CurrentBranch(Context.GithubContainer, fetch);
         }
-        private void CurrentBranch1(string path)
+        private void CurrentBranch(string path, bool fetch)
         {
-            var gitArgs = @"rev-parse --abbrev-ref HEAD";
-
-            Console.WriteLine("Repositories");
-            Console.WriteLine("{0,-30}{1,-30}{2}", "Repository", "Current branch", "Modified");
-            Console.WriteLine("============================= ============================= ===================");
-
-            var enumerable = Directory.GetDirectories(path)
-                .Select(r => new
-                {
-                    name = Path.GetFileName(r),
-                    branch = Context.Git(r, gitArgs, out _, out _).Trim(),
-                    modified = GetLastFetchDate(r).ToString("yyyy-MM-dd HH:mm:ss")
-                });
-
-            foreach (var repo in enumerable)
-            {
-                Console.Write("{0,-30}", repo.name);
-                using (BranchColor(repo.branch))
-                    Console.Write("{0,-30}", repo.branch);
-                SetDefaultColor();
-                Console.WriteLine(repo.modified);
-            }
-        }
-        private void CurrentBranch2(string path, bool fetch)
-        {
-            var gitArgs = @"status -b -s";
+            const string gitArgs = @"status -b -s";
 
             Console.WriteLine("REPOSITORIES");
             Console.WriteLine("{0,-40}{1,-30}{2,-25}{3}", "Repository", "Current branch", "Status", "Modified/Last Fetch");
@@ -93,7 +69,7 @@ namespace GitT.Commands
                 Console.WriteLine(DateTools.FormatDate(repo.Modified));
             }
         }
-        private void ParseStatus(RepositoryInfo repo, string gitOut)
+        private static void ParseStatus(RepositoryInfo repo, string gitOut)
         {
             var lines = gitOut.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
 
@@ -152,7 +128,7 @@ namespace GitT.Commands
                     }
                 }
             }
-            var status = (additions + modifications + deletions + others == 0)
+            var status = additions + modifications + deletions + others == 0
                 ? "" // "≡" 
                 : $"+{additions} ~{modifications} -{deletions}";
             if (others != 0)
@@ -187,30 +163,30 @@ namespace GitT.Commands
 
         /* ========================================================================= Color support */
 
-        private static ConsoleColor DefaultBackgroundColor;
-        private static ConsoleColor DefaultForegroundColor;
+        private static ConsoleColor _defaultBackgroundColor;
+        private static ConsoleColor _defaultForegroundColor;
 
         private static void InitializeColors()
         {
-            DefaultBackgroundColor = Console.BackgroundColor;
-            DefaultForegroundColor = Console.ForegroundColor;
+            _defaultBackgroundColor = Console.BackgroundColor;
+            _defaultForegroundColor = Console.ForegroundColor;
         }
 
         private static void SetDefaultColor()
         {
-            Console.BackgroundColor = DefaultBackgroundColor;
-            Console.ForegroundColor = DefaultForegroundColor;
+            Console.BackgroundColor = _defaultBackgroundColor;
+            Console.ForegroundColor = _defaultForegroundColor;
         }
         private static IDisposable BranchColor(string branch)
         {
             switch (branch)
             {
                 case "master":
-                    return new ColoredBlock(ConsoleColor.Cyan, DefaultBackgroundColor);
+                    return new ColoredBlock(ConsoleColor.Cyan, _defaultBackgroundColor);
                 case "develop":
-                    return new ColoredBlock(DefaultForegroundColor, DefaultBackgroundColor);
+                    return new ColoredBlock(_defaultForegroundColor, _defaultBackgroundColor);
                 default:
-                    return new ColoredBlock(ConsoleColor.Yellow, DefaultBackgroundColor);
+                    return new ColoredBlock(ConsoleColor.Yellow, _defaultBackgroundColor);
             }
         }
         private static IDisposable StatusColor(CommitStatus commitStatus)
@@ -218,13 +194,13 @@ namespace GitT.Commands
             switch (commitStatus)
             {
                 case CommitStatus.Default:
-                    return new ColoredBlock(ConsoleColor.Green, DefaultBackgroundColor);
+                    return new ColoredBlock(ConsoleColor.Green, _defaultBackgroundColor);
                 case CommitStatus.Local:
-                    return new ColoredBlock(ConsoleColor.Red, DefaultBackgroundColor);
+                    return new ColoredBlock(ConsoleColor.Red, _defaultBackgroundColor);
                 case CommitStatus.Behind:
-                    return new ColoredBlock(ConsoleColor.Yellow, DefaultBackgroundColor);
+                    return new ColoredBlock(ConsoleColor.Yellow, _defaultBackgroundColor);
                 case CommitStatus.Ahead:
-                    return new ColoredBlock(ConsoleColor.Green, DefaultBackgroundColor);
+                    return new ColoredBlock(ConsoleColor.Green, _defaultBackgroundColor);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(commitStatus), commitStatus, null);
             }
@@ -242,11 +218,11 @@ namespace GitT.Commands
                 SetDefaultColor();
             }
         }
-        private class NoColor : IDisposable
-        {
-            public static readonly NoColor Instance = new NoColor();
-            public void Dispose() { }
-        }
+        //private class NoColor : IDisposable
+        //{
+        //    public static readonly NoColor Instance = new NoColor();
+        //    public void Dispose() { }
+        //}
 
     }
 }

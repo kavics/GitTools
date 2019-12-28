@@ -19,7 +19,7 @@ namespace Tests
 
             public void Execute()
             {
-                if (Context.ParseArguments(out TestCommandArgs arguments))
+                if (Context.ParseArguments(out TestCommandArgs _))
                     return;
 
                 Console.WriteLine("Test command executed.");
@@ -27,7 +27,9 @@ namespace Tests
         }
         private class TestCommandArgs
         {
-            [CommandLineArgument(name: "String", required: false, aliases: "s,S", helpText: "HelpText of TestCommand")]
+            [CommandLineArgument("String", false, "s,S", "HelpText of TestCommand")]
+            // ReSharper disable once UnusedMember.Local
+            // ReSharper disable once UnusedMember.Global
             public string StringParam { get; set; }
         }
         private class TestCmd2Command : ICommand
@@ -39,7 +41,7 @@ namespace Tests
 
             public void Execute()
             {
-                if (Context.ParseArguments(out TestCommandArgs arguments))
+                if (Context.ParseArguments(out TestCommandArgs _))
                     return;
 
                 Console.WriteLine("Test command executed.");

@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NuGet;
 using SenseNet.Tools.CommandLineArguments;
 
@@ -39,7 +36,7 @@ namespace GitT
             return false;
         }
 
-        private string InsertCommandName(string helpText, string name)
+        private static string InsertCommandName(string helpText, string name)
         {
             var p = helpText.IndexOf("Usage:", StringComparison.Ordinal);
             p = helpText.IndexOf("GitT", p, StringComparison.Ordinal) + 5;
@@ -77,8 +74,15 @@ namespace GitT
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardError = true,
-                RedirectStandardOutput = true,
+                RedirectStandardOutput = true
             });
+
+            if (process == null)
+            {
+                exitCode = int.MinValue;
+                stdErr = string.Empty;
+                return string.Empty;
+            }
 
             stdErr = process.StandardError.ReadToEnd();
             var stdOut = process.StandardOutput.ReadToEnd();

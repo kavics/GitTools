@@ -29,7 +29,7 @@ namespace Tests
             Assert.AreEqual("yesterday at 00:00", FormatDate(TimeSpan.FromSeconds(34 * 60 * 60)));
             Assert.AreEqual("2018-07-15 23:59", FormatDate(TimeSpan.FromSeconds(34 * 60 * 60 + 1)));
         }
-        private string FormatDate(TimeSpan diff)
+        private static string FormatDate(TimeSpan diff)
         {
             var now = new DateTime(2018, 07, 17, 10, 00, 00);
             return DateTools.FormatDate(now - diff, now);

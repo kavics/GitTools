@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using GitT.Properties;
 using SenseNet.Tools.CommandLineArguments;
 
@@ -21,7 +17,7 @@ namespace GitT.Commands
         {
             try
             {
-                if (!Context.ParseArguments<ConfigureArguments>(out _args))
+                if (!Context.ParseArguments(out _args))
                     return;
             }
             catch (ParsingException e)
@@ -30,7 +26,7 @@ namespace GitT.Commands
                 return;
             }
 
-            var settings = Properties.Settings.Default;
+            var settings = Settings.Default;
             var changed = false;
             if (!string.IsNullOrEmpty(_args.GitExe))
             {
@@ -54,7 +50,7 @@ namespace GitT.Commands
                 Query(settings);
         }
 
-        private void Query(Settings settings)
+        private static void Query(Settings settings)
         {
             var keys = new[] { "GitExe", "InternalNuget", "PrivateNuget" };
             foreach (var key in keys)

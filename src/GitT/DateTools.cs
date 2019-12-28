@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GitT
 {
@@ -22,7 +18,7 @@ namespace GitT
             if (diff.TotalMinutes < 60)
                 return $"{Math.Round(diff.TotalMinutes)} minutes ago";
             if (diff.TotalHours < 2)
-                return $"an hour ago";
+                return "an hour ago";
             if (diff.TotalHours < 5)
                 return $"{Math.Round(diff.TotalHours)} hours ago";
             if (now.Year == date.Year && now.Month == date.Month && now.Day == date.Day)

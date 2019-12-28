@@ -2,7 +2,7 @@
 
 namespace GitT.Models
 {
-    public enum CommitStatus { Default, Local, Behind, Ahead };
+    public enum CommitStatus { Default, Local, Behind, Ahead }
 
     public class RepositoryInfo
     {

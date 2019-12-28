@@ -5,11 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using GitT.Models;
-using NuGet;
 using SenseNet.Tools.CommandLineArguments;
 
 namespace GitT.Commands
 {
+    // ReSharper disable once UnusedMember.Global
     public class ComponentsCommand : ICommand
     {
         public string ShortInfo => "Discovers emitted/referenced Nuget packages. " +
@@ -70,10 +70,10 @@ namespace GitT.Commands
                     : new Package[0];
 
                 Console.WriteLine();
-                Console.WriteLine($"INCOMPATIBLE PACKAGES");
+                Console.WriteLine("INCOMPATIBLE PACKAGES");
                 Console.WriteLine();
 
-                var inCompPkgs = new List<Package>();
+                var incompatiblePackages = new List<Package>();
                 if (!string.IsNullOrEmpty(_args.Prefix))
                     packages = packages
                         .Where(p => p.Id.StartsWith(_args.Prefix, StringComparison.OrdinalIgnoreCase))
@@ -84,11 +84,11 @@ namespace GitT.Commands
                     if (component == null)
                         continue;
                     if (component.Version != package.Version)
-                        inCompPkgs.Add(package);
+                        incompatiblePackages.Add(package);
                 }
 
-                //var x = inCompPkgs.OrderBy(p => p.Project.Name).ThenBy(p => p.Id)
-                foreach (var item in inCompPkgs
+                //var x = incompatiblePackages.OrderBy(p => p.Project.Name).ThenBy(p => p.Id)
+                foreach (var item in incompatiblePackages
                     .GroupBy(p => p.Project.Name, p => p, (x, y) => new { proj = x, refs = y.ToArray() }))
                 {
                     Console.WriteLine(item.proj);
@@ -168,9 +168,9 @@ namespace GitT.Commands
 
         private void DiscoverComponents(string directory, Project project)
         {
-            var nuspecs = Directory.GetFiles(directory, "*.nuspec");
-            foreach (var nuspec in nuspecs)
-                project.Components.Add(ParseComponent(nuspec, project));
+            var nuSpecs = Directory.GetFiles(directory, "*.nuspec");
+            foreach (var nuSpec in nuSpecs)
+                project.Components.Add(ParseComponent(nuSpec, project));
 
             var path = Directory.GetFiles(directory, "packages.config").FirstOrDefault();
             if (path != null)
@@ -195,7 +195,7 @@ namespace GitT.Commands
             return component;
         }
 
-        private IEnumerable<Package> ParsePackages(string path, Project project)
+        private static IEnumerable<Package> ParsePackages(string path, Project project)
         {
             var xml = new XmlDocument();
             xml.Load(path);
@@ -213,7 +213,7 @@ namespace GitT.Commands
             return packages;
         }
 
-        private void PrintComponent(Component component)
+        private static void PrintComponent(Component component)
         {
             Console.WriteLine("{0,-50} {1,-15} {2}", component.Id, component.Version, component.NugetVersion);
         }

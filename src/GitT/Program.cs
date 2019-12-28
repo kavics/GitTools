@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Eventing;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using GitT.Commands;
 using SenseNet.Tools;
 
@@ -15,11 +9,8 @@ namespace GitT
 {
     internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            //Directory.SetCurrentDirectory(@"D:\Projects\github\kavics");
-            //args = new[] { "components", "-r" };
-
             var githubContainer = Directory.GetCurrentDirectory();
 
             Run(githubContainer, args);
@@ -32,7 +23,7 @@ namespace GitT
             }
         }
 
-        static void Run(string githubContainer, string[] args)
+        private static void Run(string githubContainer, string[] args)
         {
             var command = GetCommand(args.FirstOrDefault());
             if (command == null)
