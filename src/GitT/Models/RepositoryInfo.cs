@@ -7,6 +7,7 @@ namespace GitT.Models
     public class RepositoryInfo
     {
         public string Name { get; set; }
+        public bool IsGithub { get; set; }
         public string Path { get; set; }
         public string Branch { get; set; }
         public CommitStatus CommitStatus { get; set; }

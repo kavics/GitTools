@@ -52,7 +52,7 @@ namespace GitT.Commands
                         Context.Git(r, "fetch", out _, out _);
                     }
                     var gitOut = Context.Git(r, gitArgs, out _, out _);
-                    var repo = new RepositoryInfo { Path = r, Name = name };
+                    var repo = new RepositoryInfo { Path = r, Name = name, IsGithub = true };
                     ParseStatus(repo, gitOut);
                     repo.Modified = new DateTime(Math.Max(repo.Modified.Ticks, GetLastFetchDate(r).Ticks));
                     return repo;
@@ -60,19 +60,37 @@ namespace GitT.Commands
 
             foreach (var repo in enumerable)
             {
-                Console.Write("{0,-40}", repo.Name);
-                using (BranchColor(repo.Branch))
-                    Console.Write("{0,-30}", repo.Branch);
-                using (StatusColor(repo.CommitStatus))
-                    Console.Write("{0,-25}", repo.Status);
-                SetDefaultColor();
-                Console.WriteLine(DateTools.FormatDate(repo.Modified));
+                if (repo.IsGithub)
+                {
+                    Console.Write("{0,-40}", repo.Name);
+                    using (BranchColor(repo.Branch))
+                        Console.Write("{0,-30}", repo.Branch);
+                    using (StatusColor(repo.CommitStatus))
+                        Console.Write("{0,-25}", repo.Status);
+                    SetDefaultColor();
+                    Console.WriteLine(DateTools.FormatDate(repo.Modified));
+                }
+                else
+                {
+                    using (new ColoredBlock(ConsoleColor.White, ConsoleColor.DarkRed))
+                    {
+                        Console.Write("{0,-40}", repo.Name);
+                        Console.Write("{0,-30}", "Not a github repository");
+                        Console.Write("{0,-25}", "");
+                        Console.Write("{0,-19}", "");
+                        Console.WriteLine();
+                    }
+                }
             }
         }
         private static void ParseStatus(RepositoryInfo repo, string gitOut)
         {
             var lines = gitOut.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-
+            if (lines.Length == 0)
+            {
+                repo.IsGithub = false;
+                return;
+            }
             // parse branch (example: "## master...origin/master")
             var branchSrc = lines[0].Substring(3).Split(new[] { "...", " " }, StringSplitOptions.RemoveEmptyEntries);
             var branch = branchSrc[0];
