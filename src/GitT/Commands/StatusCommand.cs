@@ -72,7 +72,7 @@ namespace GitT.Commands
                 }
                 else
                 {
-                    using (new ColoredBlock(ConsoleColor.White, ConsoleColor.DarkYellow))
+                    using (new ColoredBlock(ConsoleColor.White, ConsoleColor.DarkRed))
                     {
                         Console.Write("{0,-40}", repo.Name);
                         Console.Write("{0,-30}", "Not a github repository");
