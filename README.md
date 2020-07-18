@@ -78,13 +78,9 @@ Without arguments the command queries the current setting. For example:
 ```
 PS C:\Projects\github\MyRepos> GitT Configure
 GitExe              D:\Program Files\Git\cmd
-InternalNuget       (not configured yet)
-PrivateNuget        (not configured yet)
 ```
 ### Arguments:
 - **GitExe**: Customizes the full path of 'git.exe' on the local filesystem.
-- **InternalNuget**: Customizes the full path of the internal corporate wide nuget container.
-- **PrivateNuget**: Customizes the full path of the private nuget container on the local filesystem.
 - **Help**: Displays this command's help text. All alternatives: ?, -?, /?, -h, -H, /h, /H, -help, --help
 
 
