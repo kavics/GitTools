@@ -33,16 +33,16 @@ namespace GitT.Commands
                 settings.GitExe = _args.GitExe;
                 changed = true;
             }
-            if (!string.IsNullOrEmpty(_args.InternalNuget))
-            {
-                settings.InternalNuget = _args.InternalNuget;
-                changed = true;
-            }
-            if (!string.IsNullOrEmpty(_args.PrivateNuget))
-            {
-                settings.PrivateNuget = _args.PrivateNuget;
-                changed = true;
-            }
+            //if (!string.IsNullOrEmpty(_args.InternalNuget))
+            //{
+            //    settings.InternalNuget = _args.InternalNuget;
+            //    changed = true;
+            //}
+            //if (!string.IsNullOrEmpty(_args.PrivateNuget))
+            //{
+            //    settings.PrivateNuget = _args.PrivateNuget;
+            //    changed = true;
+            //}
 
             if (changed)
                 settings.Save();
@@ -52,7 +52,7 @@ namespace GitT.Commands
 
         private static void Query(Settings settings)
         {
-            var keys = new[] { "GitExe", "InternalNuget", "PrivateNuget" };
+            var keys = new[] { "GitExe"/*, "InternalNuget", "PrivateNuget"*/ };
             foreach (var key in keys)
             {
                 var value = settings[key].ToString();
