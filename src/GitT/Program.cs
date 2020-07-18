@@ -54,10 +54,9 @@ namespace GitT
         {
             if (commandName == null)
             {
-                WriteHelp();
-                return null;
+                commandName = "status";
             }
-            if(HelpStrings.Contains(commandName.ToLowerInvariant()))
+            else if(HelpStrings.Contains(commandName.ToLowerInvariant()))
             {
                 WriteHelp();
                 return null;
