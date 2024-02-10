@@ -1,29 +1,38 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using GitT.Commands;
-using SenseNet.Tools;
+﻿using GitT.Commands;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace GitT
 {
     internal class Program
     {
+        private static readonly string[] CommandNames = new string[] {"components", "configure", "status"};
+        private static readonly IHost Host = CreateHost();
+
         private static void Main(string[] args)
         {
-args = new[] {"components", "-refs"};
+//args = new[] { "components", "-refs" };
+args = new[] { "components", "-nuget" };
 
             var githubContainer = Directory.GetCurrentDirectory();
-githubContainer = @"D:\dev\github\sensenet";
+githubContainer = @"D:\dev\github";
 
             Run(githubContainer, args);
+        }
 
-            if (Debugger.IsAttached)
-            {
-                Console.Write("Press any key to exit...");
-                Console.ReadKey();
-                Console.WriteLine();
-            }
+        private static IHost CreateHost()
+        {
+            return Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
+                .ConfigureServices((context, services) =>
+                {
+                    services
+                        .AddSingleton<INugetTools, NugetTools>()
+                        .AddKeyedTransient<ICommand, ComponentsCommand>("components")
+                        .AddKeyedTransient<ICommand, ConfigureCommand>("configure")
+                        .AddKeyedTransient<ICommand, StatusCommand>("status")
+                        ;
+
+                }).Build();
         }
 
         private static void Run(string githubContainer, string[] args)
@@ -52,25 +61,20 @@ githubContainer = @"D:\dev\github\sensenet";
             }
         }
 
-        private static readonly string[] HelpStrings = {"/?", "/h", "/help", "-?", "-h", "-help", "--help"};
-        internal static ICommand GetCommand(string commandName)
+        private static readonly string[] HelpStrings = { "/?", "/h", "/help", "-?", "-h", "-help", "--help" };
+        internal static ICommand? GetCommand(string? commandName)
         {
             if (commandName == null)
-            {
-                commandName = "status";
-            }
-            else if(HelpStrings.Contains(commandName.ToLowerInvariant()))
+                commandName = "Status";
+            else if (HelpStrings.Contains(commandName.ToLowerInvariant()))
             {
                 WriteHelp();
                 return null;
             }
 
-            var commandType =
-                CommandTypes.FirstOrDefault(t =>
-                    t.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase) ||
-                    t.Name.Equals(commandName + "command", StringComparison.OrdinalIgnoreCase));
-            if (commandType != null)
-                return (ICommand)Activator.CreateInstance(commandType);
+            var command = Host.Services.GetKeyedService<ICommand>(commandName.ToLowerInvariant());
+            if (command != null)
+                return command;
 
             WriteError($"Unknown command: {commandName}\r\n{GetAvailableCommandsMessage()}");
             return null;
@@ -81,14 +85,8 @@ githubContainer = @"D:\dev\github\sensenet";
             Console.WriteLine(message);
         }
 
-        private static string GetAvailableCommandsMessage()
-        {
-            return "Available commands:\r\n" + string.Join("\r\n",
-                CommandTypes.Select(t => "  " + CommandContext.GetCommandName(t)).OrderBy(n => n));
-        }
-
-        private static readonly Type[] CommandTypes = new Lazy<Type[]>(() =>
-            TypeResolver.GetTypesByInterface(typeof(ICommand))).Value;
+        private static string GetAvailableCommandsMessage() =>
+            "Available commands:\r\n  " + string.Join("\r\n  ", CommandNames);
 
         private static void WriteHelp()
         {

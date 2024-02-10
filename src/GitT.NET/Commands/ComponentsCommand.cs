@@ -21,6 +21,14 @@ namespace GitT.Commands
         public CommandContext Context { get; set; }
 
         private ComponentsArguments _args;
+        private INugetTools _nugetTools;
+
+
+        public ComponentsCommand(INugetTools nugetTools)
+        {
+            _nugetTools = nugetTools;
+        }
+
         public void Execute()
         {
             try
@@ -179,7 +187,7 @@ namespace GitT.Commands
             if (pkgVersion != null)
             {
                 project.Version = pkgVersion;
-                var nugetVersion = _args.Nuget ? CommandContext.GetNugetOrgVersion(pkgId) : string.Empty;
+                var nugetVersion = _args.Nuget ? GetNugetOrgVersion(pkgId) : string.Empty;
                 var component = new Component(pkgId, pkgVersion, nugetVersion, project.PrjPath, project);
                 project.Components.Add(component);
                 if (!_args.References)
@@ -227,7 +235,7 @@ namespace GitT.Commands
 
             var id = xml.SelectSingleNode($"//{p}metadata/{p}id", nsmgr)?.InnerText;
             var version = xml.SelectSingleNode($"//{p}metadata/{p}version", nsmgr)?.InnerText;
-            var nugetVersion = _args.Nuget ? CommandContext.GetNugetOrgVersion(id) : string.Empty;
+            var nugetVersion = _args.Nuget ? GetNugetOrgVersion(id) : string.Empty;
             var component = new Component(id, version, nugetVersion, path, project);
             if (!_args.References)
                 PrintComponent(component);
@@ -273,5 +281,11 @@ namespace GitT.Commands
                 }
             }
         }
+
+        public string GetNugetOrgVersion(string packageId)
+        {
+            return _nugetTools.GetLatestVersionAsync(packageId, CancellationToken.None).GetAwaiter().GetResult() ?? string.Empty;
+        }
+
     }
 }
