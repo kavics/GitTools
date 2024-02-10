@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34408.163
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitT", "GitT\GitT.csproj", "{9062D38B-A06F-49E3-9910-D75F9AFF55C8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitT_LEGACY", "GitT_LEGACY\GitT_LEGACY.csproj", "{9062D38B-A06F-49E3-9910-D75F9AFF55C8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{03533D8E-0757-42BA-AD71-AD23BCB6CA92}"
 EndProject

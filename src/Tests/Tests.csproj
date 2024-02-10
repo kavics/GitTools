@@ -83,9 +83,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GitT\GitT.csproj">
+    <ProjectReference Include="..\GitT_LEGACY\GitT_LEGACY.csproj">
       <Project>{9062d38b-a06f-49e3-9910-d75f9aff55c8}</Project>
-      <Name>GitT</Name>
+      <Name>GitT_LEGACY</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
