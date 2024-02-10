@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitT_LEGACY", "GitT_LEGACY\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{03533D8E-0757-42BA-AD71-AD23BCB6CA92}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitT.NET", "GitT.NET\GitT.NET.csproj", "{C80A955C-C1C3-45EA-BBED-9EB6403364E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitT", "GitT\GitT.csproj", "{C80A955C-C1C3-45EA-BBED-9EB6403364E0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
