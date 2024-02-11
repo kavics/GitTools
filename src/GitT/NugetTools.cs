@@ -22,7 +22,8 @@ namespace GitT
             FindPackageByIdResource resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancel);
             IEnumerable<NuGetVersion> versions = await resource.GetAllVersionsAsync(packageId, _cache, _logger, cancel);
 
-            return versions.Max(p => p.OriginalVersion ?? string.Empty);
+            //return versions.Max(p => p.OriginalVersion ?? string.Empty);
+            return versions.LastOrDefault()?.OriginalVersion ?? string.Empty;
         }
     }
 }

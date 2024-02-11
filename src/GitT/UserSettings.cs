@@ -2,6 +2,7 @@
 
 namespace GitT
 {
+    //UNDONE: UserSettings
     public class UserSettings
     {
         // ReSharper disable once ConvertToConstant.Local

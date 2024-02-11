@@ -7,6 +7,7 @@ using SenseNet.Tools.CommandLineArguments;
 
 namespace GitT.Commands
 {
+    //UNDONE: ConfigureCommand
     public class ConfigureCommand : ICommand
     {
         //public string ShortInfo => "Queries or customizes Git Tools specialities.";

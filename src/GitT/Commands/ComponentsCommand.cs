@@ -9,7 +9,7 @@ using SenseNet.Tools.CommandLineArguments;
 
 namespace GitT.Commands
 {
-    // ReSharper disable once UnusedMember.Global
+    // GitT components [-Differences:Boolean] [-Nuget:Boolean] [-Prefix:String] [-References:Boolean] [?]
     public class ComponentsCommand : ICommand
     {
         public string ShortInfo => "Discovers emitted/referenced Nuget packages. " +
@@ -21,7 +21,7 @@ namespace GitT.Commands
         public CommandContext Context { get; set; }
 
         private ComponentsArguments _args;
-        private INugetTools _nugetTools;
+        private readonly INugetTools _nugetTools;
 
 
         public ComponentsCommand(INugetTools nugetTools)
@@ -50,7 +50,11 @@ namespace GitT.Commands
 
         private void Run()
         {
-            if (_args.References)
+            if (_args.Differences)
+            {
+                //Console.WriteLine("REFERENCES");
+            }
+            else if (_args.References)
             {
                 Console.WriteLine("REFERENCES");
             }
@@ -70,18 +74,19 @@ namespace GitT.Commands
             }
             var repositories = Discover();
 
-            if (_args.Differences)
+            if (_args.Differences) // "components -diff"
             {
                 var components = repositories.SelectMany(r => r.Projects).SelectMany(p => p.Components).ToArray();
-                var packages = _args.References
-                    ? repositories.SelectMany(r => r.Projects).SelectMany(p => p.Packages).ToArray()
-                    : new Package[0];
+                //var packages = _args.References
+                //    ? repositories.SelectMany(r => r.Projects).SelectMany(p => p.Packages).ToArray()
+                //    : new Package[0];
+                var packages =
+                    repositories.SelectMany(r => r.Projects).SelectMany(p => p.Packages).ToArray();
 
-                Console.WriteLine();
-                Console.WriteLine("INCOMPATIBLE PACKAGES");
+                Console.WriteLine("DIFFERENT PACKAGES");
                 Console.WriteLine();
 
-                var incompatiblePackages = new List<Package>();
+                var incompatiblePackages = new List<(Package package, string version)>();
                 if (!string.IsNullOrEmpty(_args.Prefix))
                     packages = packages
                         .Where(p => p.Id.StartsWith(_args.Prefix, StringComparison.OrdinalIgnoreCase))
@@ -92,17 +97,35 @@ namespace GitT.Commands
                     if (component == null)
                         continue;
                     if (component.Version != package.Version)
-                        incompatiblePackages.Add(package);
+                        incompatiblePackages.Add((package, component.Version));
                 }
 
                 //var x = incompatiblePackages.OrderBy(p => p.Project.Name).ThenBy(p => p.Id)
+                Console.WriteLine("Project");
+                Console.WriteLine("{0,-64} {1,-16} {2}", "    Component.Id", "Behind", "Latest");
+                Console.WriteLine("===============================================================  ===============  ===============");
                 foreach (var item in incompatiblePackages
-                    .GroupBy(p => p.Project.Name, p => p, (x, y) => new { proj = x, refs = y.ToArray() }))
+                             .GroupBy(p => p.package.Project.Name, p => p, (x, y) => new { proj = x, refs = y.ToArray() }))
                 {
                     Console.WriteLine(item.proj);
                     foreach (var @ref in item.refs)
-                        Console.WriteLine("  {0,-50} {1}", @ref.Id, @ref.Version);
+                        Console.WriteLine("    {0,-60} {1,-16} {2}", @ref.package.Id, @ref.package.Version, @ref.version);
                 }
+            }
+            else if (_args.References) // components -refs
+            {
+                foreach (var repo in repositories)
+                {
+                    foreach (var project in repo.Projects)
+                        PrintProjectReferences(project);
+                }
+            }
+            else // components | components -nuget
+            {
+                foreach (var repo in repositories)
+                    foreach (var project in repo.Projects)
+                        foreach (var component in project.Components)
+                            PrintComponent(component);
             }
         }
 
@@ -115,9 +138,9 @@ namespace GitT.Commands
                 repos.Add(repo);
                 DiscoverRepository(repo.Path, repo);
                 ResolveProjectReferences(repo);
-                if (_args.References && !_args.Differences)
-                    foreach (var project in repo.Projects)
-                        PrintProjectReferences(project);
+                //if (_args.References && !_args.Differences)
+                //    foreach (var project in repo.Projects)
+                //        PrintProjectReferences(project);
             }
             return repos.ToArray();
         }
@@ -190,8 +213,8 @@ namespace GitT.Commands
                 var nugetVersion = _args.Nuget ? GetNugetOrgVersion(pkgId) : string.Empty;
                 var component = new Component(pkgId, pkgVersion, nugetVersion, project.PrjPath, project);
                 project.Components.Add(component);
-                if (!_args.References)
-                    PrintComponent(component);
+                //if (!_args.References)
+                //    PrintComponent(component);
             }
 
             // ReSharper disable once PossibleNullReferenceException
@@ -237,8 +260,8 @@ namespace GitT.Commands
             var version = xml.SelectSingleNode($"//{p}metadata/{p}version", nsmgr)?.InnerText;
             var nugetVersion = _args.Nuget ? GetNugetOrgVersion(id) : string.Empty;
             var component = new Component(id, version, nugetVersion, path, project);
-            if (!_args.References)
-                PrintComponent(component);
+            //if (!_args.References)
+            //    PrintComponent(component);
             return component;
         }
 
