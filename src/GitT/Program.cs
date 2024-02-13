@@ -33,21 +33,7 @@ internal class Program
 
     private static void Main(string[] args)
     {
-        //args = new[] { "status", "-?" };
-        //args = new[] { "status" };
-        //args = new[] { "status", "-fetch" };
-        //args = new[] { "components", "-?" };
-        //args = new[] { "components" };
-        //args = new[] { "components", "-nuget" };
-        //args = new[] { "components", "-refs" };
-        //args = new[] { "components", "-diff" };
-        //args = new[] { "repositories", "sensenet" };
-        //args = new[] { "repositories", "kavics", "-branches" };
-        //args = new[] { "repositories", "kavics", "-issues" };
-
         var githubContainer = Directory.GetCurrentDirectory();
-        //githubContainer = @"D:\dev\github";
-        //githubContainer = @"D:\dev\github\sensenet";
 
         Run(githubContainer, args);
     }
