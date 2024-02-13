@@ -15,6 +15,13 @@ internal class Program
     private static readonly string[] CommandNames = new string[] {"components", "configure", "status", "repositories" };
 
     private static readonly IHost Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
+        .ConfigureAppConfiguration(configBuilder =>
+        {
+            // these operations are necessary because the app is not always started from the current folder
+            var file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
+            configBuilder.AddJsonFile(file);
+            configBuilder.AddUserSecrets("e42a77d8-2766-47dc-90ee-8ce0f0e63f67");
+        })
         .ConfigureServices((context, services) =>
         {
             services
