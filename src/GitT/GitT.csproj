@@ -6,6 +6,22 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UserSecretsId>e42a77d8-2766-47dc-90ee-8ce0f0e63f67</UserSecretsId>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageId>Kavics.GitTools</PackageId>
+    <Version>1.0.0.0</Version>
+    <Authors>kavics</Authors>
+    <Description>A tool for getting aggregated information about the github-repositories of a company.</Description>
+    <Product>Git Tools</Product>
+    <PackageProjectUrl>https://github.com/kavics/GitTools</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/kavics/GitTools.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>kavics tool git</PackageTags>
+    <Copyright>Copyright © kavics</Copyright>
+    <PackageReleaseNotes>See release notes on GitHub.</PackageReleaseNotes>
+    <PackAsTool>True</PackAsTool>
+    <ToolCommandName>GitT</ToolCommandName>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
