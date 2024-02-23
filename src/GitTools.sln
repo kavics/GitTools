@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2036
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34408.163
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitT", "GitT\GitT.csproj", "{9062D38B-A06F-49E3-9910-D75F9AFF55C8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitT_LEGACY", "GitT_LEGACY\GitT_LEGACY.csproj", "{9062D38B-A06F-49E3-9910-D75F9AFF55C8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{03533D8E-0757-42BA-AD71-AD23BCB6CA92}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitT", "GitT\GitT.csproj", "{C80A955C-C1C3-45EA-BBED-9EB6403364E0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{03533D8E-0757-42BA-AD71-AD23BCB6CA92}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03533D8E-0757-42BA-AD71-AD23BCB6CA92}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03533D8E-0757-42BA-AD71-AD23BCB6CA92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C80A955C-C1C3-45EA-BBED-9EB6403364E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C80A955C-C1C3-45EA-BBED-9EB6403364E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C80A955C-C1C3-45EA-BBED-9EB6403364E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C80A955C-C1C3-45EA-BBED-9EB6403364E0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

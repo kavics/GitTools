@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-//using NuGet;
+using NuGet;
 using SenseNet.Tools.CommandLineArguments;
 
 namespace GitT
@@ -50,9 +50,18 @@ namespace GitT
         public static string GetCommandName(Type type)
         {
             var name = type.Name;
-            return (name.EndsWith("Command")
+            return name.EndsWith("Command")
                 ? name.Substring(0, name.Length - 7)
-                : name).ToLowerInvariant();
+                : name;
+        }
+
+        public static string GetNugetOrgVersion(string packageId)
+        {
+            var repo = PackageRepositoryFactory.Default.CreateRepository("https://packages.nuget.org/api/v2");
+            var packages = repo.FindPackagesById(packageId).ToArray();
+            return packages.Any()
+                ? packages.Max(p => p.Version).ToString()
+                : string.Empty;
         }
 
         public string Git(string repoPath, string gitArgs, out int exitCode, out string stdErr)
