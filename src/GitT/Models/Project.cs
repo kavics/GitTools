@@ -10,7 +10,7 @@ namespace GitT.Models
         public string PrjPath { get; }
         public string Path { get; }
         public string Name { get; }
-        public string Version { get; set; } = "0.0.0.0 NOT SET";
+        public string Version { get; set; } = "0.0";
         public List<Component> Components { get; } = new List<Component>();
         public List<Package> Packages { get; } = new List<Package>();
         public List<string> ProjectReferences { get; } = new List<string>();

@@ -58,18 +58,22 @@ namespace GitT.Commands
             {
                 Console.WriteLine("REFERENCES");
             }
+            else if (_args.Graph)
+            {
+                Console.WriteLine("DEPENDENCY GRAPH");
+            }
             else
             {
                 Console.WriteLine("COMPONENTS");
                 if (_args.Nuget)
                 {
-                    Console.WriteLine("{0,-50} {1,-15} {2}", "Component.Id", "Version", "nuget.org");
-                    Console.WriteLine("================================================== =============== ===============");
+                    Console.WriteLine("{0,-24} {1,-50} {2,-13} {3,-13} {4}", "Repository", "Component.Id", "Version", "nuget.org", "Published");
+                    Console.WriteLine("======================== ================================================== ============= ============= ===========");
                 }
                 else
                 {
-                    Console.WriteLine("{0,-50} {1,-15}", "Component.Id", "Version");
-                    Console.WriteLine("================================================== ===============");
+                    Console.WriteLine("{0,-24} {1,-50} {2,-13}", "Repository", "Component.Id", "Version");
+                    Console.WriteLine("======================== ================================================== ===============");
                 }
             }
             var repositories = Discover();
@@ -117,8 +121,30 @@ namespace GitT.Commands
                 foreach (var repo in repositories)
                 {
                     foreach (var project in repo.Projects)
-                        PrintProjectReferences(project);
+                        PrintProjectReferences(project, repositories);
                 }
+            }
+            else if (_args.Graph) // components -graph
+            {
+                var data = new Dictionary<string, List<Project>>();
+                foreach (var repo in repositories)
+                {
+                    foreach (var project in repo.Projects)
+                    {
+                        var allRefs = GetFilteredReferences(project).Select(x => (x.Id))
+                            .Union(project.Dependencies.Select(x => (x.Name))).Distinct().ToArray();
+                        foreach (var @ref in allRefs)
+                        {
+                            if (!data.TryGetValue(@ref, out var projects))
+                            {
+                                projects = new List<Project>();
+                                data.Add(@ref, projects);
+                            }
+                            projects.Add(project);
+                        }
+                    }
+                }
+                PrintDependencyGraph(data, repositories);
             }
             else // components | components -nuget
             {
@@ -129,22 +155,48 @@ namespace GitT.Commands
             }
         }
 
+        private void PrintDependencyGraph(Dictionary<string, List<Project>> reverseReferences, Repository[] allRepositories)
+        {
+            Console.WriteLine("What additional components should be updated if the current component is updated.");
+            foreach (var item in reverseReferences)
+            {
+                var componentName = item.Key;
+                var component = allRepositories
+                    .SelectMany(repo => repo.Projects)
+                    .SelectMany(prj => prj.Components)
+                    .FirstOrDefault(c => c.Id == item.Key);
+                    Console.WriteLine("{0} - {1} - {2}", componentName, component?.Version, component?.Project.Repository.Name);
+                foreach (var dependency in item.Value)
+                    Console.WriteLine("    {0,-60} {1,-15} {2}", dependency.Name, dependency.Version, dependency.Repository.Name);
+            }
+        }
+
         private Repository[] Discover()
         {
             var repos = new List<Repository>();
-            foreach (var dir in Directory.GetDirectories(Context.GithubContainer))
+            var directories = Directory.GetDirectories(Context.GithubContainer);
+            if (directories.Any(d => Path.GetFileName(d) == ".git"))
             {
-                var repo = new Repository(dir);
+                var repo = new Repository(Context.GithubContainer);
                 repos.Add(repo);
                 DiscoverRepository(repo.Path, repo);
                 ResolveProjectReferences(repo);
-                //if (_args.References && !_args.Differences)
-                //    foreach (var project in repo.Projects)
-                //        PrintProjectReferences(project);
+            }
+            else
+            {
+                foreach (var dir in directories)
+                {
+                    var repo = new Repository(dir);
+                    Console.Write($"Discover {repo.Name}                            \r");
+                    repos.Add(repo);
+                    DiscoverRepository(repo.Path, repo);
+                    ResolveProjectReferences(repo);
+                }
+                Console.Write("                                                     \r");
             }
             return repos.ToArray();
         }
-        private void PrintProjectReferences(Project project)
+        private void PrintProjectReferences(Project project, Repository[] allRepositories)
         {
             var refs = GetFilteredReferences(project);
             if (!refs.Any() && !project.Dependencies.Any())
@@ -152,12 +204,24 @@ namespace GitT.Commands
 
             var root = Context.GithubContainer + "\\";
 
-            Console.WriteLine("{0} - {1} - {2}", project.Name, project.Version, project.Path.Replace(root, string.Empty));
+            //Console.WriteLine("{0} - {1} - {2}", project.Name, project.Version, project.Path.Replace(root, string.Empty));
+            Console.WriteLine("{0} - {1} - {2}", project.Name, project.Version, project.Repository.Name);
             foreach (var dependency in project.Dependencies)
                 Console.WriteLine("    {0,-60} {1,-15}", dependency.Name, dependency.Version);
             foreach (var package in refs)
-                Console.WriteLine("    {0,-60} {1,-15}", package.Id, package.Version);
+                Console.WriteLine("    {0,-60} {1,-15} {2}", package.Id, package.Version, GetRepositoryName(package, project.Repository.Name, allRepositories));
         }
+
+        private string GetRepositoryName(Package package, string currentRepositoryName, Repository[] allRepositories)
+        {
+            var packageId = package.Id;
+            var repo = allRepositories.FirstOrDefault(repo =>
+                repo.Projects.Any(project =>
+                    project.Components.Any(cmp => cmp.Id == packageId)));
+            var name = repo?.Name ?? string.Empty;
+            return currentRepositoryName == name ? string.Empty : name;
+        }
+
         private List<Package> GetFilteredReferences(Project project)
         {
             var packages = project.Packages;
@@ -210,7 +274,7 @@ namespace GitT.Commands
             if (pkgVersion != null)
             {
                 project.Version = pkgVersion;
-                var nugetVersion = _args.Nuget ? GetNugetOrgVersion(pkgId) : string.Empty;
+                var nugetVersion = _args.Nuget ? GetNugetOrgVersion(pkgId) : PublishedVersion.Empty;
                 var component = new Component(pkgId, pkgVersion, nugetVersion, project.PrjPath, project);
                 project.Components.Add(component);
                 //if (!_args.References)
@@ -258,7 +322,7 @@ namespace GitT.Commands
 
             var id = xml.SelectSingleNode($"//{p}metadata/{p}id", nsmgr)?.InnerText;
             var version = xml.SelectSingleNode($"//{p}metadata/{p}version", nsmgr)?.InnerText;
-            var nugetVersion = _args.Nuget ? GetNugetOrgVersion(id) : string.Empty;
+            var nugetVersion = _args.Nuget ? GetNugetOrgVersion(id) : PublishedVersion.Empty;
             var component = new Component(id, version, nugetVersion, path, project);
             //if (!_args.References)
             //    PrintComponent(component);
@@ -285,7 +349,11 @@ namespace GitT.Commands
 
         private static void PrintComponent(Component component)
         {
-            Console.WriteLine("{0,-50} {1,-15} {2}", component.Id, component.Version, component.NugetVersion);
+            var published = component.NugetVersion.PublishedDate;
+            var publishedString = published == DateTimeOffset.MinValue
+                ? string.Empty
+                : published.ToString("yyyy-MM-dd");
+            Console.WriteLine("{0,-24} {1,-50} {2,-13} {3,-13} {4}",component.Project.Repository.Name , component.Id, component.Version, component.NugetVersion.Version, publishedString);
         }
 
         private void ResolveProjectReferences(Repository repo)
@@ -305,9 +373,9 @@ namespace GitT.Commands
             }
         }
 
-        public string GetNugetOrgVersion(string packageId)
+        public PublishedVersion GetNugetOrgVersion(string packageId)
         {
-            return _nugetTools.GetLatestVersionAsync(packageId, CancellationToken.None).GetAwaiter().GetResult() ?? string.Empty;
+            return _nugetTools.GetLatestVersionAsync(packageId, CancellationToken.None).GetAwaiter().GetResult();
         }
 
     }

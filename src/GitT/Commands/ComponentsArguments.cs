@@ -7,8 +7,11 @@ namespace GitT.Commands
         [CommandLineArgument(aliases: "N", helpText: "Fetches every component version from nuget.org.")]
         public bool Nuget { get; set; }
 
-        [CommandLineArgument(aliases: "R,Ref,Refs", helpText: "Fetches every component version from nuget.org.")]
+        [CommandLineArgument(aliases: "R,Ref,Refs", helpText: "Lists referred components.")]
         public bool References { get; set; }
+
+        [CommandLineArgument(aliases: "G", helpText: "List all dependencies (reverse references).")]
+        public bool Graph { get; set; }
 
         [CommandLineArgument(aliases: "D,Diff", helpText: "Lists only the package that is different from the emitted package. Can be used only with references.")]
         public bool Differences { get; set; }

@@ -9,6 +9,7 @@ public interface IGitHubTools
     Task<IReadOnlyList<Repository>> GetRepositoriesAsync(string name, CancellationToken cancel);
     Task<IReadOnlyList<Branch>> GetBranchesForRepositoryAsync(long repositoryId, CancellationToken cancel);
     Task<IReadOnlyList<Issue>> GetIssuesForRepositoryAsync(long repositoryId, CancellationToken cancel);
+
 }
 
 /// <summary>
@@ -31,6 +32,12 @@ public class GithubTools : IGitHubTools
 
         try
         {
+            var sensenetMaster = await client.Repository.Commit.Get("sensenet", "sensenet", "7103ace6b89ed70dbf250369d6374f614483ad21");
+            var sensenetDevelop = await client.Repository.Commit.Get("sensenet", "sensenet", "7904629a6feaf850c9cef28492e8698ace52b8c4");
+
+            var sensenetMasterDate = sensenetMaster.Commit.Author.Date;
+            var sensenetDevelopDate = sensenetDevelop.Commit.Author.Date;
+
             return await client.Repository.GetAllForOrg(name).ConfigureAwait(false);
         }
         catch

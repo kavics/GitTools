@@ -41,7 +41,13 @@ internal class Program
     private static void Main(string[] args)
     {
         var githubContainer = Directory.GetCurrentDirectory();
-
+githubContainer = "D:\\dev\\github";
+//githubContainer = "D:\\dev\\github\\sensenet";
+//args = new[] { "repositories", "sensenet", "-branches" };
+//args = new[] { "components", "-refs", "-prefix", "sensenet" };
+args = new[] { "components", "-graph", "-prefix", "sensenet" };
+//args = new[] { "components" };
+//args = new[] { "components", "-nuget" };
         Run(githubContainer, args);
     }
 

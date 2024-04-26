@@ -96,7 +96,9 @@ namespace GitT.Commands
                 var branches = await _gitHubTools.GetBranchesForRepositoryAsync(repository.Id, cancel).ConfigureAwait(false);
                 Console.Write("                   \r");
                 foreach (var branch in branches)
+                {
                     Console.WriteLine($"    {branch.Name}");
+                }
             }
             Console.WriteLine();
             Console.WriteLine("ISSUES:       " + issuesTotalCount);
