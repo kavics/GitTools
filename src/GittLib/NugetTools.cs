@@ -1,11 +1,11 @@
-﻿using GitT.Models;
+﻿using Kavics.GittLib.Models;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.Common;
 using NuGet.Protocol;
 using Repository = NuGet.Protocol.Core.Types.Repository;
 
-namespace GitT
+namespace Kavics.GittLib
 {
     public interface INugetTools
     {

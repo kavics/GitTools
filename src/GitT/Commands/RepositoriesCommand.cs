@@ -1,11 +1,5 @@
 ﻿using SenseNet.Tools.CommandLineArguments;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Channels;
-using System.Threading.Tasks;
+using Kavics.GittLib;
 
 namespace GitT.Commands
 {

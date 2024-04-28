@@ -1,8 +1,7 @@
-﻿using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Octokit;
 
-namespace GitT;
+namespace Kavics.GittLib;
 
 public interface IGitHubTools
 {
@@ -11,6 +10,12 @@ public interface IGitHubTools
     Task<IReadOnlyList<Issue>> GetIssuesForRepositoryAsync(long repositoryId, CancellationToken cancel);
 
 }
+
+public class GitToolsOptions
+{
+    public string? GitHubToken { get; set; }
+}
+
 
 /// <summary>
 /// Singleton
@@ -72,7 +77,7 @@ public class GithubTools : IGitHubTools
     private GitHubClient? _pinnedGitHubClient;
     private GitHubClient GetGithubClient()
     {
-        if(_pinnedGitHubClient == null)
+        if (_pinnedGitHubClient == null)
         {
             var header = new ProductHeaderValue("GitTools");
             var client = new GitHubClient(header)

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using Kavics.GittLib.Models;
 
 namespace Kavics.GittLib.Models
 {

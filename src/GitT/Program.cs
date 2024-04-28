@@ -1,14 +1,10 @@
 ﻿using GitT.Commands;
+using Kavics.GittLib;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 
 namespace GitT;
-
-public class GitToolsOptions
-{
-    public string? GitHubToken { get; set; }
-}
 
 internal class Program
 {

@@ -4,7 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using GitT.Models;
+using Kavics.GittLib;
+using Kavics.GittLib.Models;
 using SenseNet.Tools.CommandLineArguments;
 
 namespace GitT.Commands

@@ -1,6 +1,6 @@
 ﻿namespace Kavics.GittLib;
 
-public class DateTools
+public static class DateTools
 {
     public static string FormatDate(DateTime date)
     {
@@ -25,4 +25,5 @@ public class DateTools
             return $"yesterday at {date:HH:mm}";
         return date.ToString("yyyy-MM-dd HH:mm");
     }
+
 }

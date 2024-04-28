@@ -1,7 +1,5 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using GitT.Models;
+﻿using Kavics.GittLib;
+using Kavics.GittLib.Models;
 using SenseNet.Tools.CommandLineArguments;
 
 namespace GitT.Commands
