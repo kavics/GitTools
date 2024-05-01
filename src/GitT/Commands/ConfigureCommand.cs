@@ -1,11 +1,4 @@
-﻿using System;
-using System.IO;
-using GitT.NET.Commands;
-using Microsoft.Extensions.Options;
-using NuGet;
-using SenseNet.Tools.CommandLineArguments;
-
-namespace GitT.Commands
+﻿namespace GitT.Commands
 {
     //UNDONE: ConfigureCommand
     public class ConfigureCommand : ICommand

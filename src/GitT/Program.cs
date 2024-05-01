@@ -8,7 +8,7 @@ namespace GitT;
 
 internal class Program
 {
-    private static readonly string[] CommandNames = new string[] {"components", "configure", "status", "repositories" };
+    private static readonly string[] CommandNames = {"components", "configure", "status", "repositories" };
 
     private static readonly IHost Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
         .ConfigureAppConfiguration(configBuilder =>
