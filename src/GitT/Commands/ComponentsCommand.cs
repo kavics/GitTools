@@ -5,8 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using Kavics.GittLib;
+using Kavics.GittLib.Controllers;
 using Kavics.GittLib.Models;
 using SenseNet.Tools.CommandLineArguments;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GitT.Commands
 {
@@ -23,11 +25,13 @@ namespace GitT.Commands
 
         private ComponentsArguments _args;
         private readonly INugetTools _nugetTools;
+        private readonly ILocalRepositoryController _localRepositoryController;
 
 
-        public ComponentsCommand(INugetTools nugetTools)
+        public ComponentsCommand(INugetTools nugetTools, ILocalRepositoryController controller)
         {
             _nugetTools = nugetTools;
+            _localRepositoryController = controller;
         }
 
         public void Execute()
@@ -77,7 +81,11 @@ namespace GitT.Commands
                     Console.WriteLine("======================== ================================================== ===============");
                 }
             }
-            var repositories = Discover();
+
+            var progress = new Progress<string>(name => { Console.Write($"Discover {name}                            \r"); });
+            var repositories = _localRepositoryController
+                .DiscoverRepositories(Context.GithubContainer, _args.Nuget, progress);
+            Console.Write("                                                     \r");
 
             if (_args.Differences) // "components -diff"
             {
@@ -172,31 +180,31 @@ namespace GitT.Commands
             }
         }
 
-        private Repository[] Discover()
-        {
-            var repos = new List<Repository>();
-            var directories = Directory.GetDirectories(Context.GithubContainer);
-            if (directories.Any(d => Path.GetFileName(d) == ".git"))
-            {
-                var repo = new Repository(Context.GithubContainer);
-                repos.Add(repo);
-                DiscoverRepository(repo.Path, repo);
-                ResolveProjectReferences(repo);
-            }
-            else
-            {
-                foreach (var dir in directories)
-                {
-                    var repo = new Repository(dir);
-                    Console.Write($"Discover {repo.Name}                            \r");
-                    repos.Add(repo);
-                    DiscoverRepository(repo.Path, repo);
-                    ResolveProjectReferences(repo);
-                }
-                Console.Write("                                                     \r");
-            }
-            return repos.ToArray();
-        }
+        //private Repository[] Discover()
+        //{
+        //    var repos = new List<Repository>();
+        //    var directories = Directory.GetDirectories(Context.GithubContainer);
+        //    if (directories.Any(d => Path.GetFileName(d) == ".git"))
+        //    {
+        //        var repo = new Repository(Context.GithubContainer);
+        //        repos.Add(repo);
+        //        DiscoverRepository(repo.Path, repo);
+        //        ResolveProjectReferences(repo);
+        //    }
+        //    else
+        //    {
+        //        foreach (var dir in directories)
+        //        {
+        //            var repo = new Repository(dir);
+        //            Console.Write($"Discover {repo.Name}                            \r");
+        //            repos.Add(repo);
+        //            DiscoverRepository(repo.Path, repo);
+        //            ResolveProjectReferences(repo);
+        //        }
+        //        Console.Write("                                                     \r");
+        //    }
+        //    return repos.ToArray();
+        //}
         private void PrintProjectReferences(Project project, Repository[] allRepositories)
         {
             var refs = GetFilteredReferences(project);
@@ -236,117 +244,117 @@ namespace GitT.Commands
             return packages;
         }
 
-        private void DiscoverRepository(string directory, Repository repo)
-        {
-            foreach (var path in Directory.GetFiles(directory, "*.csproj"))
-            {
-                var project = new Project(repo, path);
-                repo.Projects.Add(project);
-                DiscoverProject(project);
-            }
+        //private void DiscoverRepository(string directory, Repository repo)
+        //{
+        //    foreach (var path in Directory.GetFiles(directory, "*.csproj"))
+        //    {
+        //        var project = new Project(repo, path);
+        //        repo.Projects.Add(project);
+        //        DiscoverProject(project);
+        //    }
 
-            foreach (var dir in Directory.GetDirectories(directory))
-                DiscoverRepository(dir, repo);
-        }
+        //    foreach (var dir in Directory.GetDirectories(directory))
+        //        DiscoverRepository(dir, repo);
+        //}
 
-        private void DiscoverProject(Project project)
-        {
-            ParseCsproj(project);
+        //private void DiscoverProject(Project project)
+        //{
+        //    ParseCsproj(project);
 
-            DiscoverComponents(project.Path, project);
-            foreach (var dir in Directory.GetDirectories(project.Path))
-                DiscoverComponents(dir, project);
-        }
+        //    DiscoverComponents(project.Path, project);
+        //    foreach (var dir in Directory.GetDirectories(project.Path))
+        //        DiscoverComponents(dir, project);
+        //}
 
-        private bool ParseCsproj(Project project)
-        {
-            var xml = new XmlDocument();
-            xml.Load(project.PrjPath);
+        //private bool ParseCsproj(Project project)
+        //{
+        //    var xml = new XmlDocument();
+        //    xml.Load(project.PrjPath);
 
-            var x = xml.SelectSingleNode("/Project[@Sdk='Microsoft.NET.Sdk']");
-            if (x == null)
-                x = xml.SelectSingleNode("/Project[@Sdk='Microsoft.NET.Sdk.Web']");
+        //    var x = xml.SelectSingleNode("/Project[@Sdk='Microsoft.NET.Sdk']");
+        //    if (x == null)
+        //        x = xml.SelectSingleNode("/Project[@Sdk='Microsoft.NET.Sdk.Web']");
 
-            if (x == null)
-                return false;
+        //    if (x == null)
+        //        return false;
 
-            var pkgId = xml.SelectSingleNode("/Project/PropertyGroup/PackageId")?.InnerText ?? project.Name;
-            var pkgVersion = xml.SelectSingleNode("/Project/PropertyGroup/Version")?.InnerText;
-            if (pkgVersion != null)
-            {
-                project.Version = pkgVersion;
-                var nugetVersion = _args.Nuget ? GetNugetOrgVersion(pkgId) : PublishedVersion.Empty;
-                var component = new Component(pkgId, pkgVersion, nugetVersion, project.PrjPath, project);
-                project.Components.Add(component);
-                //if (!_args.References)
-                //    PrintComponent(component);
-            }
+        //    var pkgId = xml.SelectSingleNode("/Project/PropertyGroup/PackageId")?.InnerText ?? project.Name;
+        //    var pkgVersion = xml.SelectSingleNode("/Project/PropertyGroup/Version")?.InnerText;
+        //    if (pkgVersion != null)
+        //    {
+        //        project.Version = pkgVersion;
+        //        var nugetVersion = _args.Nuget ? GetNugetOrgVersion(pkgId) : PublishedVersion.Empty;
+        //        var component = new Component(pkgId, pkgVersion, nugetVersion, project.PrjPath, project);
+        //        project.Components.Add(component);
+        //        //if (!_args.References)
+        //        //    PrintComponent(component);
+        //    }
 
-            // ReSharper disable once PossibleNullReferenceException
-            foreach (XmlElement packageElement in xml.SelectNodes("//PackageReference"))
-            {
-                var id = packageElement.Attributes["Include"]?.Value;
-                var version = packageElement.Attributes["Version"]?.Value;
-                if (!string.IsNullOrEmpty(id))
-                    project.Packages.Add(new Package(id, version, null, project));
-            }
-            // ReSharper disable once PossibleNullReferenceException
-            foreach (XmlElement packageElement in xml.SelectNodes("//ProjectReference"))
-            {
-                var relativePath = packageElement.Attributes["Include"]?.Value;
-                if (!string.IsNullOrEmpty(relativePath))
-                    project.ProjectReferences.Add(relativePath);
-            }
+        //    // ReSharper disable once PossibleNullReferenceException
+        //    foreach (XmlElement packageElement in xml.SelectNodes("//PackageReference"))
+        //    {
+        //        var id = packageElement.Attributes["Include"]?.Value;
+        //        var version = packageElement.Attributes["Version"]?.Value;
+        //        if (!string.IsNullOrEmpty(id))
+        //            project.Packages.Add(new Package(id, version, null, project));
+        //    }
+        //    // ReSharper disable once PossibleNullReferenceException
+        //    foreach (XmlElement packageElement in xml.SelectNodes("//ProjectReference"))
+        //    {
+        //        var relativePath = packageElement.Attributes["Include"]?.Value;
+        //        if (!string.IsNullOrEmpty(relativePath))
+        //            project.ProjectReferences.Add(relativePath);
+        //    }
 
-            return true;
-        }
+        //    return true;
+        //}
 
-        private void DiscoverComponents(string directory, Project project)
-        {
-            var nuSpecs = Directory.GetFiles(directory, "*.nuspec");
-            foreach (var nuSpec in nuSpecs)
-                project.Components.Add(ParseComponent(nuSpec, project));
+        //private void DiscoverComponents(string directory, Project project)
+        //{
+        //    var nuSpecs = Directory.GetFiles(directory, "*.nuspec");
+        //    foreach (var nuSpec in nuSpecs)
+        //        project.Components.Add(ParseComponent(nuSpec, project));
 
-            var path = Directory.GetFiles(directory, "packages.config").FirstOrDefault();
-            if (path != null)
-                project.Packages.AddRange(ParsePackages(path, project));
-        }
+        //    var path = Directory.GetFiles(directory, "packages.config").FirstOrDefault();
+        //    if (path != null)
+        //        project.Packages.AddRange(ParsePackages(path, project));
+        //}
 
-        [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-        private Component ParseComponent(string path, Project project)
-        {
-            var xml = new XmlDocument();
-            xml.Load(path);
-            var nsmgr = new XmlNamespaceManager(xml.NameTable);
-            nsmgr.AddNamespace("x", "http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd");
-            var p = string.IsNullOrEmpty(xml.DocumentElement.NamespaceURI) ? "" : "x:";
+        //[SuppressMessage("ReSharper", "PossibleNullReferenceException")]
+        //private Component ParseComponent(string path, Project project)
+        //{
+        //    var xml = new XmlDocument();
+        //    xml.Load(path);
+        //    var nsmgr = new XmlNamespaceManager(xml.NameTable);
+        //    nsmgr.AddNamespace("x", "http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd");
+        //    var p = string.IsNullOrEmpty(xml.DocumentElement.NamespaceURI) ? "" : "x:";
 
-            var id = xml.SelectSingleNode($"//{p}metadata/{p}id", nsmgr)?.InnerText;
-            var version = xml.SelectSingleNode($"//{p}metadata/{p}version", nsmgr)?.InnerText;
-            var nugetVersion = _args.Nuget ? GetNugetOrgVersion(id) : PublishedVersion.Empty;
-            var component = new Component(id, version, nugetVersion, path, project);
-            //if (!_args.References)
-            //    PrintComponent(component);
-            return component;
-        }
+        //    var id = xml.SelectSingleNode($"//{p}metadata/{p}id", nsmgr)?.InnerText;
+        //    var version = xml.SelectSingleNode($"//{p}metadata/{p}version", nsmgr)?.InnerText;
+        //    var nugetVersion = _args.Nuget ? GetNugetOrgVersion(id) : PublishedVersion.Empty;
+        //    var component = new Component(id, version, nugetVersion, path, project);
+        //    //if (!_args.References)
+        //    //    PrintComponent(component);
+        //    return component;
+        //}
 
-        private static IEnumerable<Package> ParsePackages(string path, Project project)
-        {
-            var xml = new XmlDocument();
-            xml.Load(path);
-            var packages = new List<Package>();
-            // ReSharper disable once PossibleNullReferenceException
-            foreach (XmlElement packageElement in xml.SelectNodes("//package"))
-            {
-                var id = packageElement.Attributes["id"]?.Value;
-                var version = packageElement.Attributes["version"]?.Value;
-                var targetFramework = packageElement.Attributes["targetFramework"]?.Value;
-                if (!string.IsNullOrEmpty(id))
-                    packages.Add(new Package(id, version, targetFramework, project));
-            }
+        //private static IEnumerable<Package> ParsePackages(string path, Project project)
+        //{
+        //    var xml = new XmlDocument();
+        //    xml.Load(path);
+        //    var packages = new List<Package>();
+        //    // ReSharper disable once PossibleNullReferenceException
+        //    foreach (XmlElement packageElement in xml.SelectNodes("//package"))
+        //    {
+        //        var id = packageElement.Attributes["id"]?.Value;
+        //        var version = packageElement.Attributes["version"]?.Value;
+        //        var targetFramework = packageElement.Attributes["targetFramework"]?.Value;
+        //        if (!string.IsNullOrEmpty(id))
+        //            packages.Add(new Package(id, version, targetFramework, project));
+        //    }
 
-            return packages;
-        }
+        //    return packages;
+        //}
 
         private static void PrintComponent(Component component)
         {
@@ -357,27 +365,27 @@ namespace GitT.Commands
             Console.WriteLine("{0,-24} {1,-50} {2,-13} {3,-13} {4}",component.Project.Repository.Name , component.Id, component.Version, component.NugetVersion.Version, publishedString);
         }
 
-        private void ResolveProjectReferences(Repository repo)
-        {
-            foreach (var project in repo.Projects)
-            {
-                var prjDir = Path.GetDirectoryName(project.PrjPath);
-                foreach (var relativePath in project.ProjectReferences)
-                {
-                    var targetPath = Path.GetFullPath(Path.Combine(prjDir, relativePath));
-                    var targetProject = repo.Projects.FirstOrDefault(p => p.PrjPath == targetPath);
-                    if (targetProject != null)
-                        project.Dependencies.Add(targetProject);
-                    else
-                        continue;
-                }
-            }
-        }
+        //private void ResolveProjectReferences(Repository repo)
+        //{
+        //    foreach (var project in repo.Projects)
+        //    {
+        //        var prjDir = Path.GetDirectoryName(project.PrjPath);
+        //        foreach (var relativePath in project.ProjectReferences)
+        //        {
+        //            var targetPath = Path.GetFullPath(Path.Combine(prjDir, relativePath));
+        //            var targetProject = repo.Projects.FirstOrDefault(p => p.PrjPath == targetPath);
+        //            if (targetProject != null)
+        //                project.Dependencies.Add(targetProject);
+        //            else
+        //                continue;
+        //        }
+        //    }
+        //}
 
-        public PublishedVersion GetNugetOrgVersion(string packageId)
-        {
-            return _nugetTools.GetLatestVersionAsync(packageId, CancellationToken.None).GetAwaiter().GetResult();
-        }
+        //public PublishedVersion GetNugetOrgVersion(string packageId)
+        //{
+        //    return _nugetTools.GetLatestVersionAsync(packageId, CancellationToken.None).GetAwaiter().GetResult();
+        //}
 
     }
 }
