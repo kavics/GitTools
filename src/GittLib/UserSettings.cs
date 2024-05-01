@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace GitT
+﻿namespace Kavics.GittLib
 {
     //UNDONE: UserSettings
     public class UserSettings
@@ -8,9 +6,9 @@ namespace GitT
         // ReSharper disable once ConvertToConstant.Local
         private static readonly string GitWorkerExeDefaultPath = @"C:\Program Files\Git\bin\git.exe";
 
-        public string? GitExePath { get; private set; }
-        public string? InternalNugetPath { get; private set; }
-        public string? PrivateNugetPath { get; private set; }
+        public string? GitExePath { get; set; } = @"C:\Program Files\Git\bin\git.exe";
+        public string? InternalNugetPath { get; set; }
+        public string? PrivateNugetPath { get; set; }
 
 
         public static UserSettings Load()

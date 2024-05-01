@@ -21,6 +21,7 @@ internal class Program
         .ConfigureServices((context, services) =>
         {
             services
+                .AddSingleton<IGitTools, GitTools>()
                 .AddSingleton<IGitHubTools, GithubTools>()
                 .AddSingleton<INugetTools, NugetTools>()
                 .AddKeyedTransient<ICommand, ComponentsCommand>("components")
@@ -48,7 +49,7 @@ internal class Program
 
         try
         {
-            var context = new CommandContext(githubContainer, command, args.Skip(1).ToArray());
+            var context = new CommandContext(githubContainer, command, args.Skip(1).ToArray(), Host.Services);
             if (!(command is ConfigureCommand) && context.Config.GitExePath == null)
             {
                 Console.WriteLine("GitT cannot run because git.exe was not found.");
