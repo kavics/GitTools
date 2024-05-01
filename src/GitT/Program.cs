@@ -1,5 +1,6 @@
 ﻿using GitT.Commands;
 using Kavics.GittLib;
+using Kavics.GittLib.Controllers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -24,6 +25,9 @@ internal class Program
                 .AddSingleton<IGitTools, GitTools>()
                 .AddSingleton<IGitHubTools, GithubTools>()
                 .AddSingleton<INugetTools, NugetTools>()
+
+                .AddSingleton<ILocalRepositoryController, LocalRepositoryController>()
+
                 .AddKeyedTransient<ICommand, ComponentsCommand>("components")
                 .AddKeyedTransient<ICommand, ConfigureCommand>("configure")
                 .AddKeyedTransient<ICommand, StatusCommand>("status")

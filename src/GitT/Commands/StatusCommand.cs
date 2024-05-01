@@ -1,4 +1,5 @@
 ﻿using Kavics.GittLib;
+using Kavics.GittLib.Controllers;
 using Kavics.GittLib.Models;
 using Microsoft.Extensions.DependencyInjection;
 using SenseNet.Tools.CommandLineArguments;
@@ -35,13 +36,12 @@ namespace GitT.Commands
         }
         private void CurrentBranch(string path, bool fetch)
         {
-            const string gitArgs = @"status -b -s";
-
             Console.WriteLine("REPOSITORIES");
             Console.WriteLine("{0,-40}{1,-30}{2,-25}{3}", "Repository", "Current branch", "Status", "Modified/Last Fetch");
             Console.WriteLine("======================================= ============================= ======================== ===================");
 
-            var repositories = RepositoryInfo.GetRepositories(path, fetch, Context.Services.GetRequiredService<IGitTools>());
+            var controller = Context.Services.GetRequiredService<ILocalRepositoryController>();
+            var repositories = controller.GetRepositories(path, fetch);
 
             foreach (var repo in repositories)
             {
