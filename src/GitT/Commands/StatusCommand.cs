@@ -41,7 +41,7 @@ namespace GitT.Commands
             Console.WriteLine("======================================= ============================= ======================== ===================");
 
             var controller = Context.Services.GetRequiredService<ILocalRepositoryController>();
-            var repositories = controller.GetRepositories(path, fetch);
+            var repositories = controller.GetRepositoriesForStatusCommand(path, fetch);
 
             foreach (var repo in repositories)
             {
