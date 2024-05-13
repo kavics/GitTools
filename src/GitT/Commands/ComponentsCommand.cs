@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
-using System.Xml;
-using Kavics.GittLib;
+﻿using Kavics.GittLib;
 using Kavics.GittLib.Controllers;
 using Kavics.GittLib.Models;
+using NuGet.Packaging.Signing;
 using SenseNet.Tools.CommandLineArguments;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GitT.Commands
 {
@@ -55,9 +49,9 @@ namespace GitT.Commands
 
         private void Run()
         {
-            if (_args.Differences)
+            if (_args.SimulateRelease)
             {
-                //Console.WriteLine("REFERENCES");
+                Console.WriteLine("COMPUTE RELEASE WORKFLOW");
             }
             else if (_args.References)
             {
@@ -125,6 +119,99 @@ namespace GitT.Commands
                         Console.WriteLine("    {0,-60} {1,-16} {2}", @ref.package.Id, @ref.package.Version, @ref.version);
                 }
             }
+            else if (_args.SimulateRelease) // components -RSim
+            {
+                Console.WriteLine();
+                Console.WriteLine("======================= REPOSITORIES TO RELEASE");
+
+                var reposToRelease = new Dictionary<Repository, Component[]>();
+                var componentsToRelease = new Dictionary<Component, Repository>();
+                foreach (var repo in repositories)
+                {
+                    var cmpToRelease = repo.Projects
+                        .SelectMany(p => p.Components)
+                        .Where(c => c.Version.Split('.').Length == 4).ToArray();
+                    if (cmpToRelease.Length > 0)
+                        reposToRelease.Add(repo, cmpToRelease);
+                    foreach (var component in cmpToRelease)
+                        componentsToRelease.Add(component, repo);
+                }
+                var componentNamesToRelease = componentsToRelease.Keys
+                    .Select(x => x.Name)
+                    .ToList();
+
+                foreach (var item in reposToRelease)
+                {
+                    Console.WriteLine(item.Key.Name);
+                    foreach (var component in item.Value)
+                    {
+                        Console.WriteLine("    {0,-64} {1,-15}", component.Name, component.Version);
+                        var x = component.Project.Packages
+                            .Where(pkg => componentNamesToRelease.Contains(pkg.Id));
+                        foreach (var dep in x)
+                            Console.WriteLine("        {0,-60} {1,-15}", dep.Id, dep.Version);
+                    }
+                }
+
+                Console.WriteLine("======================= RELEASE WORKFLOW");
+                var releasedRepositories = new Dictionary<Repository, Component[]>();
+                var releasedComponentNames = new List<string>();
+                var repos = reposToRelease.ToList();
+                while (repos.Count > 0)
+                {
+                    for (int i = 0; i < repos.Count; i++)
+                    {
+                        var repo = repos[i].Key;
+                        var components = repos[i].Value;
+                        var dependentComponents = components
+                            .SelectMany(c => c.Project.Packages)
+                            .Where(pkg => componentNamesToRelease.Contains(pkg.Id))
+                            .ToArray();
+                        if (!dependentComponents.Any())
+                        {
+                            releasedRepositories.Add(repo, components);
+                            repos.Remove(repos[i]);
+                            foreach (var component in components)
+                            {
+                                componentNamesToRelease.Remove(component.Name);
+                                releasedComponentNames.Add(component.Name);
+                            }
+                            break;
+                        }
+                    }
+                }
+                Console.WriteLine("----------------------- PART-1: RELEASE PACKAGES");
+                foreach (var item in releasedRepositories)
+                {
+                    Console.WriteLine(item.Key.Name);
+                    foreach (var component in item.Value)
+                        Console.WriteLine("    {0,-64} {1,-15} -> {2,-15}", component.Name, component.Version, GetVersionToRelease(component.Version));
+                }
+
+                Console.WriteLine("----------------------- PART-2: UPDATE NOT PUBLISHED PROJECTS");
+                foreach (var repo in releasedRepositories.Keys)
+                {
+                    var projectsToUpgrade = repo.Projects
+                        .Where(prj => prj.Components.Count == 0) // only not publishable projects
+                        .Where(prj => prj.Packages
+                            .Select(p => p.Id)
+                            .Intersect(releasedComponentNames)
+                            .Any())
+                        .ToArray();
+                    if (projectsToUpgrade.Any())
+                    {
+                        Console.WriteLine(repo.Name);
+                        foreach (var project in projectsToUpgrade)
+                        {
+                            Console.WriteLine("    {0,-64}", project.Name);
+                            var x = project.Packages.Select(p => p.Id)
+                                .Intersect(releasedComponentNames);
+                            foreach (var newPackage in x)
+                                Console.WriteLine("        {0,-64}", newPackage);
+                        }
+                    }
+                }
+            }
             else if (_args.References) // components -refs
             {
                 foreach (var repo in repositories)
@@ -162,6 +249,19 @@ namespace GitT.Commands
                         foreach (var component in project.Components)
                             PrintComponent(component);
             }
+        }
+
+        private string GetVersionToRelease(string version)
+        {
+            var segments = version.Split('.');
+            if (segments.Length < 4)
+                return version;
+            var newSegments = segments.Take(2).ToList();
+            if (int.TryParse(segments[2], out var segment2))
+                newSegments.Add((segment2 + 1).ToString());
+            else
+                newSegments.Add("???");
+            return string.Join(".", newSegments);
         }
 
         private void PrintDependencyGraph(Dictionary<string, List<Project>> reverseReferences, Repository[] allRepositories)
