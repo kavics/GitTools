@@ -7,8 +7,6 @@ public interface ILocalRepositoryController
 {
     IEnumerable<RepositoryInfo> GetRepositoriesForStatusCommand(string path, bool fetch);
     Repository[] DiscoverRepositories(string githubContainerPath, bool nuget, IProgress<string> progress);
-    Repository[] GetDependencyGraph(string githubContainerPath, IProgress<string> progress);
-
 }
 
 public class LocalRepositoryController : ILocalRepositoryController
@@ -286,10 +284,5 @@ public class LocalRepositoryController : ILocalRepositoryController
     public PublishedVersion GetNugetOrgVersion(string packageId)
     {
         return _nugetTools.GetLatestVersionAsync(packageId, CancellationToken.None).GetAwaiter().GetResult();
-    }
-
-    public Repository[] GetDependencyGraph(string githubContainerPath, IProgress<string> progress)
-    {
-        throw new NotImplementedException();
     }
 }

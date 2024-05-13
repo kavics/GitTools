@@ -41,7 +41,7 @@ namespace GitT.Commands
                 return;
             }
 
-            if (_args.References)
+            if (_args.Differences || _args.Graph || _args.SimulateRelease || _args.References)
                 _args.Nuget = false;
 
             Run();
@@ -149,10 +149,11 @@ namespace GitT.Commands
                         var x = component.Project.Packages
                             .Where(pkg => componentNamesToRelease.Contains(pkg.Id));
                         foreach (var dep in x)
-                            Console.WriteLine("        {0,-60} {1,-15}", dep.Id, dep.Version);
+                            Console.WriteLine("        {0,-60}", dep.Id);
                     }
                 }
 
+                Console.WriteLine();
                 Console.WriteLine("======================= RELEASE WORKFLOW");
                 var releasedRepositories = new Dictionary<Repository, Component[]>();
                 var releasedComponentNames = new List<string>();
@@ -180,6 +181,7 @@ namespace GitT.Commands
                         }
                     }
                 }
+                Console.WriteLine();
                 Console.WriteLine("----------------------- PART-1: RELEASE PACKAGES");
                 foreach (var item in releasedRepositories)
                 {
@@ -188,6 +190,7 @@ namespace GitT.Commands
                         Console.WriteLine("    {0,-64} {1,-15} -> {2,-15}", component.Name, component.Version, GetVersionToRelease(component.Version));
                 }
 
+                Console.WriteLine();
                 Console.WriteLine("----------------------- PART-2: UPDATE NOT PUBLISHED PROJECTS");
                 foreach (var repo in releasedRepositories.Keys)
                 {
@@ -211,6 +214,7 @@ namespace GitT.Commands
                         }
                     }
                 }
+                Console.WriteLine();
             }
             else if (_args.References) // components -refs
             {
