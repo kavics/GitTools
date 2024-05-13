@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace GitT.Models
+namespace Kavics.GittLib.Models
 {
     [DebuggerDisplay("{" + nameof(Id) + "}")]
     public class Package

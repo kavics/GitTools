@@ -1,18 +1,15 @@
 ﻿using GitT.Commands;
+using Kavics.GittLib;
+using Kavics.GittLib.Controllers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 
 namespace GitT;
 
-public class GitToolsOptions
-{
-    public string? GitHubToken { get; set; }
-}
-
 internal class Program
 {
-    private static readonly string[] CommandNames = new string[] {"components", "configure", "status", "repositories" };
+    private static readonly string[] CommandNames = {"components", "configure", "status", "repositories" };
 
     private static readonly IHost Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
         .ConfigureAppConfiguration(configBuilder =>
@@ -25,8 +22,12 @@ internal class Program
         .ConfigureServices((context, services) =>
         {
             services
+                .AddSingleton<IGitTools, GitTools>()
                 .AddSingleton<IGitHubTools, GithubTools>()
                 .AddSingleton<INugetTools, NugetTools>()
+
+                .AddSingleton<ILocalRepositoryController, LocalRepositoryController>()
+
                 .AddKeyedTransient<ICommand, ComponentsCommand>("components")
                 .AddKeyedTransient<ICommand, ConfigureCommand>("configure")
                 .AddKeyedTransient<ICommand, StatusCommand>("status")
@@ -41,7 +42,6 @@ internal class Program
     private static void Main(string[] args)
     {
         var githubContainer = Directory.GetCurrentDirectory();
-
         Run(githubContainer, args);
     }
 
@@ -53,7 +53,7 @@ internal class Program
 
         try
         {
-            var context = new CommandContext(githubContainer, command, args.Skip(1).ToArray());
+            var context = new CommandContext(githubContainer, command, args.Skip(1).ToArray(), Host.Services);
             if (!(command is ConfigureCommand) && context.Config.GitExePath == null)
             {
                 Console.WriteLine("GitT cannot run because git.exe was not found.");

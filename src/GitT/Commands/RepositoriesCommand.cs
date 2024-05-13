@@ -1,11 +1,5 @@
 ﻿using SenseNet.Tools.CommandLineArguments;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Channels;
-using System.Threading.Tasks;
+using Kavics.GittLib;
 
 namespace GitT.Commands
 {
@@ -96,7 +90,9 @@ namespace GitT.Commands
                 var branches = await _gitHubTools.GetBranchesForRepositoryAsync(repository.Id, cancel).ConfigureAwait(false);
                 Console.Write("                   \r");
                 foreach (var branch in branches)
+                {
                     Console.WriteLine($"    {branch.Name}");
+                }
             }
             Console.WriteLine();
             Console.WriteLine("ISSUES:       " + issuesTotalCount);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using Kavics.GittLib;
 //using NuGet;
 using SenseNet.Tools.CommandLineArguments;
 
@@ -13,13 +14,15 @@ namespace GitT
         public string GithubContainer { get; }
         public string[] Args { get; }
         public ICommand Command { get; }
+        public IServiceProvider Services { get; }
 
-        internal CommandContext(string githubContainer, ICommand command, string[] args)
+        internal CommandContext(string githubContainer, ICommand command, string[] args, IServiceProvider services)
         {
             Config = UserSettings.Load();
             GithubContainer = githubContainer;
             Command = command;
             Args = args;
+            Services = services;
         }
 
         public bool ParseArguments<T>(out T arguments) where T : class, new()

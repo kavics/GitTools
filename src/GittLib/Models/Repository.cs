@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace GitT.Models
+namespace Kavics.GittLib.Models
 {
     [DebuggerDisplay("{" + nameof(Name) + "}")]
     public class Repository

@@ -1,7 +1,16 @@
 ﻿using System.Diagnostics;
 
-namespace GitT.Models
+namespace Kavics.GittLib.Models
 {
+    public class PublishedVersion
+    {
+        public DateTimeOffset PublishedDate { get; set; }
+        public string Version { get; set; }
+
+        public static readonly PublishedVersion Empty =
+            new PublishedVersion{Version = string.Empty, PublishedDate = DateTimeOffset.MinValue};
+    }
+
     [DebuggerDisplay("{" + nameof(Name) + "}")]
     public class Component
     {
@@ -11,9 +20,9 @@ namespace GitT.Models
         public string Name { get; }
         public Project Project { get; }
 
-        public string NugetVersion { get; }
+        public PublishedVersion NugetVersion { get; }
 
-        public Component(string id, string version, string nugetOrgVersion, string path, Project project)
+        public Component(string id, string version, PublishedVersion nugetOrgVersion, string path, Project project)
         {
             Id = id;
             Version = version;
