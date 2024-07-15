@@ -130,7 +130,7 @@ namespace GitT.Commands
                 {
                     var cmpToRelease = repo.Projects
                         .SelectMany(p => p.Components)
-                        .Where(c => c.Version.Split('.').Length == 4).ToArray();
+                        .Where(c => c.Version.Split('.').Length == 4 && !c.Version.EndsWith(".0")).ToArray();
                     if (cmpToRelease.Length > 0)
                         reposToRelease.Add(repo, cmpToRelease);
                     foreach (var component in cmpToRelease)
