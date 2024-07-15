@@ -1,4 +1,5 @@
-﻿using Kavics.GittLib.Models;
+﻿using System.Configuration;
+using Kavics.GittLib.Models;
 using System.Xml;
 
 namespace Kavics.GittLib.Controllers;
@@ -170,7 +171,12 @@ public class LocalRepositoryController : ILocalRepositoryController
         }
 
         foreach (var dir in Directory.GetDirectories(directory))
+        {
+            var name = Path.GetFileName(dir).ToLowerInvariant();
+            if (name == ".git" || name == ".github" || name == ".vs")
+                continue;
             DiscoverRepository(dir, repo, nuget);
+        }
     }
     private void DiscoverProject(Project project, bool nuget)
     {
