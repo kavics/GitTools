@@ -1,4 +1,5 @@
-﻿using SenseNet.Tools.CommandLineArguments;
+﻿using System.Collections;
+using SenseNet.Tools.CommandLineArguments;
 using Kavics.GittLib;
 
 namespace GitT.Commands
@@ -31,6 +32,12 @@ namespace GitT.Commands
                 return;
             }
 
+            if (_args.OrganizationName == "<<<unknown>>>")
+            {
+                Console.WriteLine("Missing name of github organization or user.");
+                return;
+            }
+
             if (_args.Branches)
                 BranchesAsync(_args.OrganizationName, CancellationToken.None).GetAwaiter().GetResult();
             else if (_args.Issues)
@@ -43,7 +50,18 @@ namespace GitT.Commands
         {
             Console.WriteLine($"All branches by repositories of " + orgName);
             Console.Write("getting repositories...\r");
-            var repositories = await _gitHubTools.GetRepositoriesAsync(orgName, cancel).ConfigureAwait(false);
+            IEnumerable<Octokit.Repository> repositories;
+            try
+            {
+                repositories = await _gitHubTools.GetRepositoriesAsync(orgName, cancel).ConfigureAwait(false);
+            }
+            catch (MissingOrganizationException e)
+            {
+                Console.Write("                       \r");
+                Console.WriteLine("Missing organization or user: " + orgName);
+                return;
+            }
+
             Console.Write("                       \r");
             Console.WriteLine("ACTIVE");
             var issuesTotalCount = 0;

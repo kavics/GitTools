@@ -58,7 +58,7 @@ public class GithubTools : IGitHubTools
             // do nothing
         }
 
-        throw new ArgumentException("Unknown user or organization: " + name);
+        throw new MissingOrganizationException("Unknown user or organization: " + name);
     }
 
     public Task<IReadOnlyList<Branch>> GetBranchesForRepositoryAsync(long repositoryId, CancellationToken cancel)
