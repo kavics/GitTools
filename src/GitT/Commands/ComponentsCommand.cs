@@ -278,9 +278,42 @@ namespace GitT.Commands
                     .SelectMany(repo => repo.Projects)
                     .SelectMany(prj => prj.Components)
                     .FirstOrDefault(c => c.Id == item.Key);
-                    Console.WriteLine("{0} - {1} - {2}", componentName, component?.Version, component?.Project.Repository.Name);
+                Console.WriteLine("{0} - {1} - {2}", componentName, component?.Version, component?.Project.Repository.Name);
                 foreach (var dependency in item.Value)
                     Console.WriteLine("    {0,-60} {1,-15} {2}", dependency.Name, dependency.Version, dependency.Repository.Name);
+            }
+
+            var repoGraph = new Dictionary<string, List<string>>();
+            foreach (var item in reverseReferences)
+            {
+                var component = allRepositories
+                    .SelectMany(repo => repo.Projects)
+                    .SelectMany(prj => prj.Components)
+                    .FirstOrDefault(c => c.Id == item.Key);
+                if (component != null)
+                {
+                    var key = component.Project.Repository.Name;
+                    if (!repoGraph.TryGetValue(key, out var targetList))
+                    {
+                        targetList = new List<string>();
+                        repoGraph.Add(key, targetList);
+                    }
+                    foreach (var dependency in item.Value)
+                        targetList.Add(dependency.Repository.Name);
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("------------------------------------------------------------------------------------");
+            Console.WriteLine("REPOSITORY DEPENDENCY GRAPH");
+            Console.WriteLine("Warning: should contains cycles.");
+            Console.WriteLine("What additional repositories should be updated if the current repository is updated.");
+            foreach (var item in repoGraph)
+            {
+                Console.WriteLine(item.Key);
+                foreach (var target in item.Value.Distinct())
+                    if(target != item.Key)
+                        Console.WriteLine("    {0} ", target);
             }
         }
 
