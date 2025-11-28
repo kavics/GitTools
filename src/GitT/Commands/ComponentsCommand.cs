@@ -257,15 +257,23 @@ namespace GitT.Commands
 
         private string GetVersionToRelease(string version)
         {
-            var segments = version.Split('.');
-            if (segments.Length < 4)
-                return version;
-            var newSegments = segments.Take(2).ToList();
-            if (int.TryParse(segments[2], out var segment2))
-                newSegments.Add((segment2 + 1).ToString());
-            else
-                newSegments.Add("???");
-            return string.Join(".", newSegments);
+//var segments = version.Split('.');
+//if (segments.Length < 4)
+//    return version;
+//var newSegments = segments.Take(2).ToList();
+//if (int.TryParse(segments[2], out var segment2))
+//    newSegments.Add((segment2 + 1).ToString());
+//else
+//    newSegments.Add("???");
+//return string.Join(".", newSegments);
+            try
+            {
+                return SemVer.NextRelease(version);
+            }
+            catch (FormatException e)
+            {
+                return version+"???";
+            }
         }
 
         private void PrintDependencyGraph(Dictionary<string, List<Project>> reverseReferences, Repository[] allRepositories)
